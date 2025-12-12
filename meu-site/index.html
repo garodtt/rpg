@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema Velho Oeste – Unificado</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header>🏜️ Sistema Velho Oeste – Tudo em um HTML</header>
+
+<!-- ============================= -->
+<!--           HOME                -->
+<!-- ============================= -->
+<div id="home" class="tela" style="display:block;">
+    <a class="btn" onclick="abrir('ficha')">📘 Criar Ficha (Ficha V2)</a>
+    <a class="btn" onclick="abrir('gerenciamento')">⚙️ Gerenciamento de Personagens (V1)</a>
+    <a class="btn" onclick="abrir('fichasSalvas')">📂 Fichas Salvas</a>
+</div>
+
+<!-- ============================= -->
+<!--           FICHA V2            -->
+<!-- ============================= -->
+<div id="ficha" class="tela">
+    <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+
+    <h1>Ficha de Personagem – Velho Oeste</h1>
+
+    <div class="box">
+      <h2>Nome do Personagem</h2>
+      <input id="nomePersonagem" placeholder="Digite o nome do personagem" />
+
+      <h3>Antecedentes</h3>
+      <div id="areaAntecedentes"></div>
+
+      <h3>Atributos</h3>
+      <div id="areaAtributos"></div>
+    </div>
+
+    <div class="box">
+      <h2>Habilidades</h2>
+      <input id="habilidadeNome" placeholder="Nome da habilidade" />
+      <textarea id="habilidadeDesc" rows="2"></textarea>
+      <div style="display:flex; gap:6px;">
+        <button onclick="addHabilidade()">Adicionar</button>
+        <button onclick="limparHabilidades()">Limpar</button>
+      </div>
+      <ul id="listaHabilidades"></ul>
+    </div>
+
+    <div class="box">
+      <h2>Armas</h2>
+      <input id="armaNome" placeholder="Nome da arma" />
+      <input id="armaDano" type="number" placeholder="Dano" />
+      <input id="armaMunicao" type="number" placeholder="Munição" />
+      <div style="display:flex; gap:6px;">
+        <button onclick="addArma()">Adicionar</button>
+        <button onclick="limparArmas()">Limpar</button>
+      </div>
+      <ul id="listaArmas"></ul>
+    </div>
+
+    <div class="box">
+      <h2>Inventário</h2>
+      <textarea id="inventario" rows="4" placeholder="Itens..."></textarea>
+    </div>
+
+    <div class="box">
+      <h2>XP</h2>
+      <p>XP Atual:</p>
+      <input id="xp" type="number" value="0" readonly />
+      <h3>Ações que dão XP</h3>
+      <div id="listaAcoes"></div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button onclick="salvarFicha()">💾 Salvar Ficha</button>
+      <button onclick="salvarFicha(true)">💾 Salvar Como (novo)</button>
+      <button onclick="limparFicha()">🧹 Limpar</button>
+    </div>
+</div>
+
+<!-- ============================= -->
+<!--      GERENCIAMENTO V1         -->
+<!-- ============================= -->
+<div id="gerenciamento" class="tela">
+    <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+    <h1>Gerenciador de Personagens</h1>
+
+    <div>
+        <input id="nomeInput" placeholder="Nome do personagem" />
+        <input id="vidaInput" type="number" placeholder="Vida" />
+        <input id="dorInput" type="number" placeholder="Dor Máxima" />
+        <input id="balasInput" type="number" placeholder="Qtd Máxima de Balas" />
+        <input id="iniInput" type="number" placeholder="Iniciativa" />
+        <button onclick="adicionarPersonagem()">Adicionar</button>
+    </div>
+
+    <div style="display:flex; gap:20px;">
+        <div id="lista" style="flex:2"></div>
+        <div id="painelIniciativas" style="flex:1; border-left:2px solid #333; padding-left:10px;"></div>
+    </div>
+</div>
+
+<!-- ============================= -->
+<!--        FICHAS SALVAS          -->
+<!-- ============================= -->
+<div id="fichasSalvas" class="tela">
+  <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+  <h1>Fichas Salvas</h1>
+  <div style="margin-bottom:10px;">
+    <button onclick="carregarFichas()">🔄 Recarregar lista</button>
+  </div>
+  <div id="listaFichas"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
