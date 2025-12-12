@@ -1,12 +1,26 @@
+// script.js
+
 /* ============================= */
 /*   CONFIG SUPABASE (INSERIDO)  */
 /* ============================= */
 const SUPA_URL = "https://oafqjrzbkgvntwlekmlq.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hZnFqcnpia2d2bnR3bGVrbWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNDQ0NzYsImV4cCI6MjA4MDkyMDQ3Nn0.OPw0x8cpTRgp4IoC42mpU9H1Ld9K2cXGjBAJffAVX3";
 
-// Supabase v2 client (global createClient available when including the CDN script)
-const supabase = typeof createClient === 'function' ? createClient(SUPA_URL, SUPA_KEY) : null;
-if(!supabase) console.warn('Supabase client not found. Verifique se o script do SDK está incluído.');
+/*  
+   IMPORTANTE:
+   O SDK do Supabase via CDN expõe "window.supabase"
+   e NÃO expõe "createClient" direto.
+*/
+
+const supabase = window.supabase
+    ? window.supabase.createClient(SUPA_URL, SUPA_KEY)
+    : null;
+
+if (!supabase) {
+    console.error("❌ Supabase client not found. Verifique se o SDK está carregando antes do script.js");
+} else {
+    console.log("✅ Supabase conectado com sucesso!");
+}
 
 /* ============================= */
 /*        TROCAR DE TELA        */
