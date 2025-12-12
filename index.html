@@ -1,3 +1,5 @@
+<!--index-->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,6 +7,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sistema Velho Oeste – Unificado</title>
 <link rel="stylesheet" href="style.css">
+
+<!-- Supabase SDK PRECISA vir antes de tudo -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Seu script, com defer -->
+<script defer src="script.js"></script>
+
 </head>
 <body>
 <header>🏜️ Sistema Velho Oeste – Tudo em um HTML</header>
@@ -71,7 +80,6 @@
         <div id="painelIniciativas" class="iniCol"></div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
+
 </body>
 </html>
