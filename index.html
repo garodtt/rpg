@@ -1,11 +1,9 @@
-<!--index-->
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sistema Oeste Selvagem </title>
+<title>Sistema Oeste Selvagem</title>
 <link rel="stylesheet" href="style.css">
 
 <!-- Supabase SDK -->
@@ -13,23 +11,41 @@
 
 <!-- Seu script -->
 <script defer src="script.js"></script>
-
 </head>
 <body>
-<header>🏜️ Oeste Selvagem </header>
 
+<header>🏜️ Oeste Selvagem</header>
+
+<!-- ================== HOME ================== -->
 <div id="home" class="tela" style="display:block;">
     <a class="btn" onclick="abrir('ficha')">📘 Criar Ficha</a>
     <a class="btn" onclick="abrir('gerenciamento')">⚙️ Gerenciamento de Personagens</a>
+    <a class="btn" onclick="abrirFichas()">📂 Fichas Salvas</a>
 </div>
 
-<div id="ficha" class="tela">
+<!-- ================== FICHA ================== -->
+<div id="ficha" class="tela" style="display:none;">
     <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
     <h1>Ficha de Personagem</h1>
 
     <div class="box">
       <h2>Nome do Personagem</h2>
-      <input id="nomePersonagem" placeholder="Digite o nome do personagem" />
+      <div id="nomeWrapper">
+        <input id="nomePersonagem" placeholder="Digite o nome do personagem" />
+        <span id="iconeMorte" style="display:none;">☠️</span>
+      </div>
+
+      <div class="linha topo-status">
+        <label>
+          vida_max
+          <input id="vidaMaxInput" type="number" min="1" value="6" onchange="reiniciarStatus()">
+        </label>
+
+        <label>
+          dor_max
+          <input id="dorMaxInput" type="number" min="1" value="6" onchange="reiniciarStatus()">
+        </label>
+      </div>
 
       <h3>Antecedentes</h3>
       <div id="areaAntecedentes"></div>
@@ -39,10 +55,14 @@
     </div>
 
     <div class="box">
+      <h2>Status</h2>
+      <div id="areaStatus"></div>
+    </div>
+
+    <div class="box">
       <h2>Habilidades</h2>
       <input id="habilidadeNome" placeholder="Nome da habilidade" />
-      <textarea id="habilidadeDesc" rows="2"></textarea>
-
+      <input id="habilidadeDesc" placeholder="Descrição da habilidade" />
       <div class="rowBtns">
         <button onclick="addHabilidade()">Adicionar</button>
         <button onclick="limparHabilidades()">Limpar</button>
@@ -55,12 +75,10 @@
       <input id="armaNome" placeholder="Nome da arma" />
       <input id="armaDano" type="number" placeholder="Dano" />
       <input id="armaMunicao" type="number" placeholder="Munição" />
-
       <div class="rowBtns">
         <button onclick="addArma()">Adicionar</button>
         <button onclick="limparArmas()">Limpar</button>
       </div>
-
       <ul id="listaArmas"></ul>
     </div>
 
@@ -78,12 +96,8 @@
     <button class="btn" onclick="salvarFicha()">💾 Salvar Ficha</button>
 </div>
 
-
-<!-- ===================================== -->
-<!-- Gerenciamento de Personagens -->
-<!-- ===================================== -->
-
-<div id="gerenciamento" class="tela">
+<!-- ================== GERENCIAMENTO ================== -->
+<div id="gerenciamento" class="tela" style="display:none;">
     <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
     <h1>Gerenciador de Personagens</h1>
 
@@ -100,6 +114,13 @@
         <div id="lista" class="listCol"></div>
         <div id="painelIniciativas" class="iniCol"></div>
     </div>
+</div>
+
+<!-- ================== FICHAS SALVAS ================== -->
+<div id="telaFichas" class="tela" style="display:none;">
+    <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+    <h1>Fichas Salvas</h1>
+    <div id="listaFichas" class="box"></div>
 </div>
 
 </body>
