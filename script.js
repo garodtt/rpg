@@ -752,8 +752,11 @@ function abrirFichas() {
 /* AUTO-LISTAR FICHAS AO ABRIR       */
 /* ================================= */
 document.addEventListener("DOMContentLoaded", () => {
+    montarCampos();   // 🔥 ESSENCIAL
     listarFichas();
 });
+
+
 
 
 
