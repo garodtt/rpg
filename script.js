@@ -93,20 +93,6 @@ function montarStatus() {
   };
 }
 
-
-  document.getElementById("menosVida").onclick = () => {
-    statusValores.vidaAtual = Math.max(0, statusValores.vidaAtual - 1);
-    aplicarDano();
-    atualizarStatus();
-  };
-
-  document.getElementById("menosDor").onclick = () => {
-    statusValores.dorAtual--;
-    aplicarDano();
-    atualizarStatus();
-  };
-
-
 function atualizarStatus() {
   document.getElementById("vidaAtual").textContent = statusValores.vidaAtual;
   document.getElementById("dorAtual").textContent = statusValores.dorAtual;
@@ -763,6 +749,7 @@ function abrirFichas() {
 document.addEventListener("DOMContentLoaded", () => {
     listarFichas();
 });
+
 
 
 
