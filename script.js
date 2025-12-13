@@ -195,10 +195,15 @@ function alterarValor(nome, delta, tipo){
 function montarCampos(){
     const A = document.getElementById("areaAntecedentes");
     const B = document.getElementById("areaAtributos");
+
+    // 🔥 LIMPAR antes de recriar
+    A.innerHTML = "";
+    B.innerHTML = "";
+
     antecedentes.forEach(a => A.appendChild(criarLinha(a,"ante")));
     atributos.forEach(a => B.appendChild(criarLinha(a,"atrib")));
 }
-montarCampos();
+
 
 /* ================================= */
 /*                XP                 */
@@ -483,8 +488,8 @@ async function carregarFicha(id){
         // 🔐 marca que esta ficha já existe (ESSENCIAL)
         fichaAtualId = data.id;
 
-       abrir("ficha");
-       preencherFormularioComFicha(data);
+        preencherFormularioComFicha(data);
+        abrir("ficha");
 
     } catch(err){
         alert("Erro ao carregar ficha: " + err.message);
@@ -493,7 +498,6 @@ async function carregarFicha(id){
 }
 
 function preencherFormularioComFicha(f){
-    montarCampos();
     limparHabilidades();
     limparArmas();
     document.getElementById("nomePersonagem").value = f.nome;
