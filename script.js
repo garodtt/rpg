@@ -1,3 +1,4 @@
+
 /* ================================= */
 /*            CONFIG SUPABASE        */
 /* ================================= */
@@ -13,6 +14,9 @@ if (!supabase) {
 } else {
     console.log("✅ Supabase conectado");
 }
+// 🔑 ID da ficha atualmente carregada (null = nova ficha)
+let fichaAtualId = null;
+
 
 /* ================================= */
 /*       FUNÇÃO PARA GERAR HASH      */
@@ -31,6 +35,107 @@ function abrir(nome){
     document.querySelectorAll(".tela").forEach(t => t.style.display="none");
     document.getElementById(nome).style.display = "block";
 }
+
+/* ================================= */
+/*        STATUS: VIDA / DOR         */
+/* ================================= */
+
+const statusValores = {
+  vidaAtual: 0,
+  vidaMax: 0,
+  dorAtual: 0,
+  dorMax: 0
+};
+
+function montarStatus() {
+  const area = document.getElementById("areaStatus");
+
+  area.innerHTML = `
+    <div class="linha">
+      ❤️ Vida: <span id="vidaAtual">${statusValores.vidaAtual}</span>
+      <button id="menosVida">-1</button>
+    </div>
+
+    <div class="linha">
+      💢 Dor: <span id="dorAtual">${statusValores.dorAtual}</span>
+      <button id="menosDor">-1</button>
+    </div>
+  `;
+
+  document.getElementById("menosVida").onclick = () => {
+    statusValores.vidaAtual = Math.max(0, statusValores.vidaAtual - 1);
+    aplicarDano();
+    atualizarStatus();
+  };
+
+  document.getElementById("menosDor").onclick = () => {
+    statusValores.dorAtual--;
+    aplicarDano();
+    atualizarStatus();
+  };
+}
+
+function atualizarStatus() {
+  document.getElementById("vidaAtual").textContent = statusValores.vidaAtual;
+  document.getElementById("dorAtual").textContent = statusValores.dorAtual;
+}
+
+/* ================================= */
+/*     NORMALIZAÇÃO VIDA / DOR       */
+/* ================================= */
+
+function aplicarDano() {
+  let { vidaAtual, vidaMax, dorAtual, dorMax } = statusValores;
+
+  // limites superiores
+  if (vidaAtual > vidaMax) vidaAtual = vidaMax;
+  if (dorAtual > dorMax) dorAtual = dorMax;
+
+  // quebra de resistência
+  if (dorAtual <= 0 && dorMax > 0) {
+    dorAtual = dorMax;
+    vidaAtual--;
+  }
+
+  // 🚫 vida nunca abaixo de 0
+  if (vidaAtual < 0) vidaAtual = 0;
+
+  statusValores.vidaAtual = vidaAtual;
+  statusValores.dorAtual = dorAtual;
+
+  const nomeInput = document.getElementById("nomePersonagem");
+  const icone = document.getElementById("iconeMorte");
+
+  if (vidaAtual === 0) {
+    nomeInput.classList.add("personagem-caido");
+    icone.style.display = "inline";
+  } else {
+    nomeInput.classList.remove("personagem-caido");
+    icone.style.display = "none";
+  }
+}
+
+/* ================================= */
+/*        INICIALIZAÇÃO              */
+/* ================================= */
+
+function inicializarStatus(vida, dor) {
+  statusValores.vidaMax = vida;
+  statusValores.vidaAtual = vida;
+  statusValores.dorMax = dor;
+  statusValores.dorAtual = dor;
+  montarStatus();
+}
+
+function reiniciarStatus() {
+  const vida = Number(document.getElementById("vidaMaxInput").value);
+  const dor = Number(document.getElementById("dorMaxInput").value);
+
+  if (vida > 0 && dor > 0) {
+    inicializarStatus(vida, dor);
+  }
+}
+
 
 /* ================================= */
 /*    SISTEMA – ANTECEDENTES / ATR   */
@@ -142,33 +247,111 @@ function limparHabilidades(){ document.getElementById("listaHabilidades").innerH
 /*               ARMAS               */
 /* ================================= */
 function addArma(){
-    const n=document.getElementById("armaNome").value.trim();
-    const d=document.getElementById("armaDano").value.trim();
-    const m=document.getElementById("armaMunicao").value.trim();
-    if(!n) return;
-    const li=document.createElement("li");
+    const n = document.getElementById("armaNome").value.trim();
+    const d = document.getElementById("armaDano").value.trim();
+    const m = Number(document.getElementById("armaMunicao").value.trim());
+    if(!n || isNaN(m)) return;
+
+    const li = document.createElement("li");
     li.dataset.nome = n;
     li.dataset.dano = d;
-    li.dataset.municao = m;
-    li.innerHTML = `<strong>${n}</strong> — Dano: ${d}, Munição: ${m}`;
+    li.dataset.municaoAtual = m;  // munição atual
+    li.dataset.municaoMax = m;    // munição máxima
+
+    li.innerHTML = `
+        <strong>${n}</strong> — Dano: ${d}, Munição: <span class="municao">${m}</span>
+        <button class="menosMunicao">-1</button>
+        <button class="maisMunicao">+1</button>
+        <button class="recarregar" style="display:none">Recarregar</button>
+    `;
+
+    li.querySelector(".menosMunicao").onclick = () => {
+        let municao = Number(li.dataset.municaoAtual);
+        if(municao <= 0) return;
+
+        municao--;
+        li.dataset.municaoAtual = municao;
+        li.querySelector(".municao").textContent = municao;
+
+        if(municao <= 0){
+            li.querySelector(".menosMunicao").style.display = "none";
+            li.querySelector(".recarregar").style.display = "inline";
+        }
+    };
+
+    li.querySelector(".maisMunicao").onclick = () => {
+        let municao = Number(li.dataset.municaoAtual);
+        const max = Number(li.dataset.municaoMax);
+        if(municao >= max) return;
+
+        municao++;
+        li.dataset.municaoAtual = municao;
+        li.querySelector(".municao").textContent = municao;
+
+        if(municao > 0){
+            li.querySelector(".menosMunicao").style.display = "inline";
+            li.querySelector(".recarregar").style.display = "none";
+        }
+    };
+
+    li.querySelector(".recarregar").onclick = () => {
+        const max = Number(li.dataset.municaoMax);
+        li.dataset.municaoAtual = max;
+        li.querySelector(".municao").textContent = max;
+        li.querySelector(".menosMunicao").style.display = "inline";
+        li.querySelector(".recarregar").style.display = "none";
+    };
+
     document.getElementById("listaArmas").appendChild(li);
-    document.getElementById("armaNome").value="";
-    document.getElementById("armaDano").value="";
-    document.getElementById("armaMunicao").value="";
+
+    document.getElementById("armaNome").value = "";
+    document.getElementById("armaDano").value = "";
+    document.getElementById("armaMunicao").value = "";
 }
-function limparArmas(){ document.getElementById("listaArmas").innerHTML=""; }
+
+/* ================================= */
+/*          ARMAS / TIRO             */
+/* ================================= */
+
+function atirar(liArma) {
+    let municao = Number(liArma.dataset.municao || 0);
+    const dano = Number(liArma.dataset.dano || 0);
+
+    if (municao <= 0) {
+        alert("🔫 Sem munição!");
+        return;
+    }
+
+    municao--;
+    liArma.dataset.municao = municao;
+
+    liArma.innerHTML = `<strong>${liArma.dataset.nome}</strong> — Dano: ${dano}, Munição: ${municao}`;
+
+    aplicarDano(dano);
+
+    
+}
+
+/* ================================= */
+/*           LIMPAR ARMAS            */
+/* ================================= */
+function limparArmas() {
+    document.getElementById("listaArmas").innerHTML = "";
+}
+
 
 /* ================================= */
 /*     SUPABASE: SALVAR / CARREGAR   */
 /* ================================= */
 async function salvarFicha(){
     if(!supabase) return alert("Supabase não configurado.");
+
     const nome = document.getElementById("nomePersonagem").value.trim();
     if(!nome) return alert("Digite o nome do personagem.");
 
-    // Criar senha apenas aqui, discreto
-    const senha = prompt("Crie uma senha para esta ficha (visível ao digitar):");
+    const senha = prompt("Digite a senha da ficha:");
     if(!senha) return alert("Senha obrigatória!");
+
     const senhaHash = await gerarHash(senha);
 
     const habilidades = [...document.querySelectorAll("#listaHabilidades li")].map(li => ({
@@ -188,68 +371,47 @@ async function salvarFicha(){
         arma: armas,
         inventario: document.getElementById("inventario").value.trim(),
         xp: Number(document.getElementById("xp").value),
-        atributo: {...atributoValores},
-        antecedente: {...antecedenteValores},
-        senha_hash: senhaHash
+        atributo: { ...atributoValores },
+        antecedente: { ...antecedenteValores },
+
+        vida: statusValores.vidaAtual,
+        vida_max: statusValores.vidaMax,
+        dor: statusValores.dorAtual,
+        dor_max: statusValores.dorMax
     };
 
-    try{
-        const { data, error } = await supabase
-            .from("fichas")
-            .insert(payload)
-            .select();
-        if(error) throw error;
-        alert("Ficha salva! ID: " + data[0].id);
-        listarFichas();
-    }catch(err){
-        alert("Erro ao salvar: " + err.message);
-    }
-}
+    try {
+        let query;
 
-async function listarFichas(){
-    if(!supabase) return;
-
-    let area = document.getElementById("areaFichasList");
-    if(!area){
-        area = document.createElement("div");
-        area.id = "areaFichasList";
-        area.className = "box";
-        area.innerHTML = `<h2>Fichas Salvas</h2><div id="listaFichas"></div>`;
-        document.getElementById("ficha").appendChild(area);
-    }
-
-    const lista = document.getElementById("listaFichas");
-    lista.innerHTML = "Carregando...";
-
-    try{
-        const { data, error } = await supabase
-            .from("fichas")
-            .select("*")
-            .order("created_at", { ascending:false });
-        if(error) throw error;
-
-        lista.innerHTML = "";
-        if(!data.length){
-            lista.innerHTML = "<em>Nenhuma ficha.</em>";
-            return;
+        // 🔁 SE JÁ EXISTE → UPDATE
+        if(fichaAtualId){
+            query = supabase
+                .from("fichas")
+                .update(payload)
+                .eq("id", fichaAtualId)
+                .select();
+        }
+        // 🆕 SE NÃO EXISTE → INSERT
+        else{
+            payload.senha_hash = senhaHash;
+            query = supabase
+                .from("fichas")
+                .insert(payload)
+                .select();
         }
 
-        data.forEach(f => {
-            const div = document.createElement("div");
-            div.className = "box";
-            div.style.marginBottom = "8px";
-            div.innerHTML = `
-                <strong>${f.nome}</strong><br>
-                XP: ${f.xp}<br>
-                <button onclick="carregarFicha('${f.id}')">Carregar</button>
-                <button onclick="excluirFicha('${f.id}')">Excluir</button>
-            `;
-            lista.appendChild(div);
-        });
-    }catch(err){
-        lista.innerHTML = "Erro: " + err.message;
+        const { error } = await query;
+        if(error) throw error;
+
+        alert("✅ Ficha salva com sucesso!");
+        listarFichas();
+
+    } catch(err){
+        alert("❌ Erro ao salvar: " + err.message);
+        console.error(err);
     }
 }
+
 
 async function excluirFicha(id){
     if(!supabase) return;
@@ -281,8 +443,10 @@ async function excluirFicha(id){
 
 async function carregarFicha(id){
     if(!supabase) return;
+
     const senha = prompt("Digite a senha da ficha:");
     if(!senha) return alert("Senha obrigatória.");
+
     const senhaHash = await gerarHash(senha);
 
     try{
@@ -291,13 +455,22 @@ async function carregarFicha(id){
             .select("*")
             .eq("id", id)
             .single();
+
         if(error) throw error;
 
-        if(data.senha_hash !== senhaHash) return alert("❌ Senha incorreta!");
+        if(data.senha_hash !== senhaHash){
+            return alert("❌ Senha incorreta!");
+        }
+
+        // 🔐 marca que esta ficha já existe (ESSENCIAL)
+        fichaAtualId = data.id;
+
         preencherFormularioComFicha(data);
         abrir("ficha");
-    }catch(err){
-        alert("Erro ao carregar: " + err.message);
+
+    } catch(err){
+        alert("Erro ao carregar ficha: " + err.message);
+        console.error(err);
     }
 }
 
@@ -336,7 +509,232 @@ function preencherFormularioComFicha(f){
         atributoValores[k] = val;
         document.getElementById("atrib_"+k.replace(/\s+/g,'_')).textContent = val;
     });
+
+      // 🔁 restaurar STATUS
+  statusValores.vidaMax = f.vida_max;
+  statusValores.dorMax = f.dor_max;
+  statusValores.vidaAtual = f.vida;
+  statusValores.dorAtual = f.dor;
+
+  // atualizar inputs visuais
+  document.getElementById("vidaMaxInput").value = f.vida_max;
+  document.getElementById("dorMaxInput").value = f.dor_max;
+
+  montarStatus();
+  aplicarDano();
+
+    
 }
 
-/* AUTO-LISTAR */
-listarFichas();
+/* ================================= */
+/*        GERENCIAMENTO              */
+/* ================================= */
+
+function adicionarPersonagem() {
+    const nome = document.getElementById("nomeInput").value.trim();
+    const vidaMax = parseInt(document.getElementById("vidaInput").value);
+    const dorMax = parseInt(document.getElementById("dorInput").value);
+    const balaMax = parseInt(document.getElementById("balasInput").value);
+    const ini = parseInt(document.getElementById("iniInput").value);
+
+    if (!nome || isNaN(vidaMax) || isNaN(dorMax) || isNaN(balaMax)) return;
+
+    const div = document.createElement("div");
+    div.className = "personagem";
+    div.dataset.ini = ini;
+    div.dataset.nome = nome;
+
+    let vida = vidaMax;
+    let dor = dorMax;
+    let balas = balaMax;
+
+    div.innerHTML = `
+    <h3>🤠 ${nome}</h3>
+    <div class="linha">⚡ Iniciativa: ${ini}</div>
+
+    <div class="linha">
+         Vida: <span class="vida">${vida}</span>
+        <button class="menosVida">-1</button>
+    </div>
+
+    <div class="linha">
+         Dor: <span class="dor">${dor}</span>
+        <button class="menosDor">-1</button>
+    </div>
+
+    <div class="linha">
+         Balas: <span class="balas">${balas}</span> / ${balaMax}
+        <button class="menosBala">-1</button>
+        <button class="recarregar" style="display:none">Recarregar</button>
+    </div>
+
+    <div class="linha">
+        <button class="btn excluirPersonagem">❌ Excluir Personagem</button>
+    </div>
+`;
+
+// 🔹 Adiciona o evento fora do template literal
+div.querySelector(".excluirPersonagem").onclick = () => {
+    div.remove(); // remove o personagem da lista
+    atualizarListaIniciativa(); // atualiza a lista de iniciativa
+};
+
+    const vidaSpan = div.querySelector(".vida");
+    const dorSpan = div.querySelector(".dor");
+    const balaSpan = div.querySelector(".balas");
+
+    div.querySelector(".menosVida").onclick = () => {
+        vida = Math.max(0, vida - 1);
+        vidaSpan.textContent = vida;
+    };
+
+    div.querySelector(".menosDor").onclick = () => {
+        dor--;
+        if (dor <= 0) {
+            dor = dorMax;
+            vida = Math.max(0, vida - 1);
+            vidaSpan.textContent = vida;
+        }
+        dorSpan.textContent = dor;
+    };
+
+    div.querySelector(".menosBala").onclick = () => {
+        balas--;
+        if (balas <= 0) {
+            balas = 0;
+            div.querySelector(".menosBala").style.display = "none";
+            div.querySelector(".recarregar").style.display = "inline";
+        }
+        balaSpan.textContent = balas;
+    };
+
+    div.querySelector(".recarregar").onclick = () => {
+        balas = balaMax;
+        balaSpan.textContent = balas;
+        div.querySelector(".menosBala").style.display = "inline";
+        div.querySelector(".recarregar").style.display = "none";
+    };
+
+    document.getElementById("lista").appendChild(div);
+    atualizarListaIniciativa();
+
+    nomeInput.value = vidaInput.value = dorInput.value = balasInput.value = iniInput.value = "";
+}
+
+function atualizarListaIniciativa() {
+    const chars = [...document.querySelectorAll(".personagem")];
+    chars.sort((a, b) => Number(b.dataset.ini) - Number(a.dataset.ini));
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+    chars.forEach(p => lista.appendChild(p));
+
+    const painel = document.getElementById("painelIniciativas");
+    painel.innerHTML = chars
+        .map(p => `• ${p.dataset.nome} — ${p.dataset.ini}`)
+        .join("<br>");
+}
+
+/* ================================= */
+/*     SUPABASE: LISTAR FICHAS       */
+/* ================================= */
+async function listarFichas() {
+    if(!supabase) return;
+
+    const lista = document.getElementById("listaFichas");
+    lista.innerHTML = "Carregando...";
+
+    try {
+        const { data, error } = await supabase
+            .from("fichas")
+            .select("*")
+            .order("created_at", { ascending:false });
+        if(error) throw error;
+
+        lista.innerHTML = "";
+        if(!data.length){
+            lista.innerHTML = "<em>Nenhuma ficha.</em>";
+            return;
+        }
+
+        data.forEach(f => {
+            const div = document.createElement("div");
+            div.className = "box";
+            div.style.marginBottom = "8px";
+            div.innerHTML = `
+                <strong>${f.nome}</strong><br>
+                XP: ${f.xp}<br>
+                <button onclick="carregarFicha('${f.id}')">Carregar</button>
+                <button onclick="excluirFicha('${f.id}')">Excluir</button>
+            `;
+            lista.appendChild(div);
+        });
+    } catch(err) {
+        lista.innerHTML = "Erro: " + err.message;
+        console.error(err);
+    }
+}
+
+
+/* ================================= */
+/*           NOVA FICHA              */
+/* ================================= */
+function novaFicha() { 
+    fichaAtualId = null; // limpa referência
+    document.getElementById("nomePersonagem").value = "";
+    document.getElementById("inventario").value = "";
+    document.getElementById("xp").value = 0;
+
+    // Limpar habilidades e armas
+    limparHabilidades();
+    limparArmas();
+
+    // Resetar antecedentes e atributos
+    Object.keys(antecedenteValores).forEach(k => {
+        antecedenteValores[k] = 0;
+        document.getElementById("ante_" + k.replace(/\s+/g,'_')).textContent = 0;
+    });
+
+    Object.keys(atributoValores).forEach(k => {
+        atributoValores[k] = 0;
+        document.getElementById("atrib_" + k.replace(/\s+/g,'_')).textContent = 0;
+    });
+
+    // Inicializar status com valores padrão
+    inicializarStatus(10, 10);
+
+    // Abrir tela da ficha
+    abrir("ficha");
+}
+
+
+/* ================================= */
+/*           TROCAR TELAS            */
+/* ================================= */
+function abrir(nome){
+    document.querySelectorAll(".tela").forEach(t => t.style.display="none");
+    document.getElementById(nome).style.display = "block";
+}
+
+// ============================
+// FUNÇÃO PARA ABRIR FICHAS SALVAS
+// ============================
+function abrirFichas() {
+    abrir("telaFichas"); // mostra a tela de fichas
+    listarFichas();      // atualiza a lista
+}
+
+
+/* ================================= */
+/* AUTO-LISTAR FICHAS AO ABRIR       */
+/* ================================= */
+document.addEventListener("DOMContentLoaded", () => {
+    listarFichas();
+});
+
+
+
+
+
+
+
