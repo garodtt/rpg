@@ -54,13 +54,45 @@ function montarStatus() {
     <div class="linha">
       ❤️ Vida: <span id="vidaAtual">${statusValores.vidaAtual}</span>
       <button id="menosVida">-1</button>
+      <button id="maisVida">+1</button>
     </div>
 
     <div class="linha">
       💢 Dor: <span id="dorAtual">${statusValores.dorAtual}</span>
       <button id="menosDor">-1</button>
+      <button id="maisDor">+1</button>
     </div>
   `;
+
+  // ➖ VIDA
+  document.getElementById("menosVida").onclick = () => {
+    statusValores.vidaAtual = Math.max(0, statusValores.vidaAtual - 1);
+    aplicarDano();
+    atualizarStatus();
+  };
+
+  // ➕ VIDA
+  document.getElementById("maisVida").onclick = () => {
+    statusValores.vidaAtual++;
+    aplicarDano();
+    atualizarStatus();
+  };
+
+  // ➖ DOR
+  document.getElementById("menosDor").onclick = () => {
+    statusValores.dorAtual--;
+    aplicarDano();
+    atualizarStatus();
+  };
+
+  // ➕ DOR
+  document.getElementById("maisDor").onclick = () => {
+    statusValores.dorAtual++;
+    aplicarDano();
+    atualizarStatus();
+  };
+}
+
 
   document.getElementById("menosVida").onclick = () => {
     statusValores.vidaAtual = Math.max(0, statusValores.vidaAtual - 1);
@@ -73,7 +105,7 @@ function montarStatus() {
     aplicarDano();
     atualizarStatus();
   };
-}
+
 
 function atualizarStatus() {
   document.getElementById("vidaAtual").textContent = statusValores.vidaAtual;
