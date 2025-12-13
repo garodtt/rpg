@@ -1,16 +1,7 @@
 /* ================================= */
 /*            CONFIG SUPABASE        */
 /* ================================= */
-
 const SUPA_URL = "https://oafqjrzbkgvntwlekmlq.supabase.co";
-
-/*
-⚠️ IMPORTANTE ⚠️
-VOCÊ PRECISA COLAR AQUI A "anon public key"
-
-NO SUPABASE:
-Project Settings → API → Project API Keys → "anon public"
-*/
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hZnFqcnpia2d2bnR3bGVrbWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNDQ0NzYsImV4cCI6MjA4MDkyMDQ3Nn0.OPw0x8cpTRgp4IoC42mpU9H1Ld9K2cXGjBAJffAVX3I";
 
 const supabase = window.supabase
@@ -18,15 +9,24 @@ const supabase = window.supabase
     : null;
 
 if (!supabase) {
-    console.error("❌ Supabase client não encontrado. Verifique se o SDK carregou.");
+    console.error("❌ Supabase client não encontrado.");
 } else {
     console.log("✅ Supabase conectado");
 }
 
 /* ================================= */
+/*       FUNÇÃO PARA GERAR HASH      */
+/* ================================= */
+async function gerarHash(texto) {
+    const msgUint8 = new TextEncoder().encode(texto);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ================================= */
 /*           TROCAR TELAS            */
 /* ================================= */
-
 function abrir(nome){
     document.querySelectorAll(".tela").forEach(t => t.style.display="none");
     document.getElementById(nome).style.display = "block";
@@ -35,7 +35,6 @@ function abrir(nome){
 /* ================================= */
 /*    SISTEMA – ANTECEDENTES / ATR   */
 /* ================================= */
-
 const antecedentes = ["atenção","medicina","montaria","negócios","roubo","suor","tradição","violência"];
 const atributos = ["Físico","Velocidade","Intelecto","Coragem"];
 
@@ -48,9 +47,7 @@ atributos.forEach(a => atributoValores[a] = 0);
 function criarLinha(nome, tipo){
     const div = document.createElement("div");
     div.className = "counter-line";
-
     const id = (tipo === 'ante' ? 'ante_'+nome : 'atrib_'+nome).replace(/\s+/g,'_');
-
     div.innerHTML = `
         <strong>${nome}</strong>
         <span>
@@ -75,17 +72,14 @@ function alterarValor(nome, delta, tipo){
 function montarCampos(){
     const A = document.getElementById("areaAntecedentes");
     const B = document.getElementById("areaAtributos");
-
     antecedentes.forEach(a => A.appendChild(criarLinha(a,"ante")));
     atributos.forEach(a => B.appendChild(criarLinha(a,"atrib")));
 }
-
 montarCampos();
 
 /* ================================= */
 /*                XP                 */
 /* ================================= */
-
 const acoes = [
   {nome: "Montar acampamento corretamente", xp: 2},
   {nome: "Melhorar o nível da base", xp: 5},
@@ -130,7 +124,6 @@ function ganharXP(i){
 /* ================================= */
 /*           HABILIDADES             */
 /* ================================= */
-
 function addHabilidade(){
     const n=document.getElementById("habilidadeNome").value.trim();
     const d=document.getElementById("habilidadeDesc").value.trim();
@@ -140,19 +133,14 @@ function addHabilidade(){
     li.dataset.desc = d;
     li.innerHTML = `<strong>${n}</strong> — ${d}`;
     document.getElementById("listaHabilidades").appendChild(li);
-
     document.getElementById("habilidadeNome").value="";
     document.getElementById("habilidadeDesc").value="";
 }
-
-function limparHabilidades(){
-    document.getElementById("listaHabilidades").innerHTML="";
-}
+function limparHabilidades(){ document.getElementById("listaHabilidades").innerHTML=""; }
 
 /* ================================= */
 /*               ARMAS               */
 /* ================================= */
-
 function addArma(){
     const n=document.getElementById("armaNome").value.trim();
     const d=document.getElementById("armaDano").value.trim();
@@ -164,141 +152,24 @@ function addArma(){
     li.dataset.municao = m;
     li.innerHTML = `<strong>${n}</strong> — Dano: ${d}, Munição: ${m}`;
     document.getElementById("listaArmas").appendChild(li);
-
     document.getElementById("armaNome").value="";
     document.getElementById("armaDano").value="";
     document.getElementById("armaMunicao").value="";
 }
-
-function limparArmas(){
-    document.getElementById("listaArmas").innerHTML="";
-}
-
-/* ================================= */
-/*    GERENCIAMENTO DE PERSONAGENS   */
-/* ================================= */
-
-function adicionarPersonagem() {
-    const nome = nomeInput.value.trim();
-    const vidaMax = parseInt(vidaInput.value);
-    const dorMax = parseInt(dorInput.value);
-    const balaMax = parseInt(balasInput.value);
-    const ini = parseInt(iniInput.value);
-
-    if (!nome || !vidaMax || !dorMax || !balaMax || isNaN(ini)) {
-        alert("Preencha tudo corretamente!");
-        return;
-    }
-
-    const div = document.createElement("div");
-    div.className = "personagem";
-    div.dataset.ini = ini;
-    div.dataset.nome = nome;
-
-    let vida = vidaMax;
-    let dor = dorMax;
-    let balas = balaMax;
-
-    div.innerHTML = `
-        <h2>🤠 ${nome}</h2>
-        <div class="linha">Iniciativa: ${ini}</div>
-
-        <div class="linha">
-            Vida: <span class="vida">${vida}</span>
-            <button class="menosVida">-1</button>
-        </div>
-
-        <div class="linha">
-            Dor: <span class="dor">${dor}</span>
-            <button class="menosDor">-1</button>
-        </div>
-
-        <div class="linha">
-            Balas: <span class="balas">${balas}</span> / ${balaMax}
-            <button class="menosBala">-1</button>
-            <button class="recarregar" style="display:none;">Recarregar</button>
-        </div>
-
-        <button class="removerPersonagem" style="margin-top:10px;background:#922;">🗑️ Remover</button>
-    `;
-
-    const vidaSpan = div.querySelector('.vida');
-    const dorSpan = div.querySelector('.dor');
-    const balaSpan = div.querySelector('.balas');
-    const btnVida = div.querySelector('.menosVida');
-    const btnDor = div.querySelector('.menosDor');
-    const btnBala = div.querySelector('.menosBala');
-    const btnRecarregar = div.querySelector('.recarregar');
-    const btnRemover = div.querySelector('.removerPersonagem');
-
-    btnVida.onclick = () => {
-        vida = Math.max(0, vida - 1);
-        vidaSpan.textContent = vida;
-    };
-
-    btnDor.onclick = () => {
-        dor--;
-        if(dor <= 0){
-            dor = dorMax;
-            vida = Math.max(0, vida - 1);
-            vidaSpan.textContent = vida;
-        }
-        dorSpan.textContent = dor;
-    };
-
-    btnBala.onclick = () => {
-        balas--;
-        if(balas <= 0){
-            balas = 0;
-            btnBala.style.display = "none";
-            btnRecarregar.style.display = "inline";
-        }
-        balaSpan.textContent = balas;
-    };
-
-    btnRecarregar.onclick = () => {
-        balas = balaMax;
-        balaSpan.textContent = balas;
-        btnRecarregar.style.display = "none";
-        btnBala.style.display = "inline";
-    };
-
-    btnRemover.onclick = () => {
-        div.remove();
-        atualizarListaIniciativa();
-    };
-
-    lista.appendChild(div);
-    atualizarListaIniciativa();
-
-    nomeInput.value =
-    vidaInput.value =
-    dorInput.value =
-    balasInput.value =
-    iniInput.value = "";
-}
-
-function atualizarListaIniciativa() {
-    const chars = [...document.querySelectorAll('.personagem')];
-
-    chars.sort((a, b) => parseInt(b.dataset.ini) - parseInt(a.dataset.ini));
-
-    lista.innerHTML = "";
-    chars.forEach(c => lista.appendChild(c));
-
-    painelIniciativas.innerHTML =
-        chars.map(c => `• ${c.dataset.nome} — ${c.dataset.ini}`).join("<br>");
-}
+function limparArmas(){ document.getElementById("listaArmas").innerHTML=""; }
 
 /* ================================= */
 /*     SUPABASE: SALVAR / CARREGAR   */
 /* ================================= */
-
 async function salvarFicha(){
-    if(!supabase) return alert("Supabase não configurado corretamente.");
-
+    if(!supabase) return alert("Supabase não configurado.");
     const nome = document.getElementById("nomePersonagem").value.trim();
     if(!nome) return alert("Digite o nome do personagem.");
+
+    // Criar senha apenas aqui, discreto
+    const senha = prompt("Crie uma senha para esta ficha (visível ao digitar):");
+    if(!senha) return alert("Senha obrigatória!");
+    const senhaHash = await gerarHash(senha);
 
     const habilidades = [...document.querySelectorAll("#listaHabilidades li")].map(li => ({
         nome: li.dataset.nome,
@@ -318,7 +189,8 @@ async function salvarFicha(){
         inventario: document.getElementById("inventario").value.trim(),
         xp: Number(document.getElementById("xp").value),
         atributo: {...atributoValores},
-        antecedente: {...antecedenteValores}
+        antecedente: {...antecedenteValores},
+        senha_hash: senhaHash
     };
 
     try{
@@ -326,14 +198,10 @@ async function salvarFicha(){
             .from("fichas")
             .insert(payload)
             .select();
-
         if(error) throw error;
-
         alert("Ficha salva! ID: " + data[0].id);
         listarFichas();
-
     }catch(err){
-        console.error(err);
         alert("Erro ao salvar: " + err.message);
     }
 }
@@ -358,55 +226,64 @@ async function listarFichas(){
             .from("fichas")
             .select("*")
             .order("created_at", { ascending:false });
-
         if(error) throw error;
 
+        lista.innerHTML = "";
         if(!data.length){
             lista.innerHTML = "<em>Nenhuma ficha.</em>";
             return;
         }
 
-        lista.innerHTML = "";
-
         data.forEach(f => {
             const div = document.createElement("div");
             div.className = "box";
             div.style.marginBottom = "8px";
-
             div.innerHTML = `
                 <strong>${f.nome}</strong><br>
                 XP: ${f.xp}<br>
                 <button onclick="carregarFicha('${f.id}')">Carregar</button>
                 <button onclick="excluirFicha('${f.id}')">Excluir</button>
-                <pre style="white-space:pre-wrap;max-height:120px;overflow:auto;">
-${JSON.stringify(f, null, 2)}
-                </pre>
             `;
-
             lista.appendChild(div);
         });
-
     }catch(err){
-        console.error(err);
         lista.innerHTML = "Erro: " + err.message;
     }
 }
 
 async function excluirFicha(id){
     if(!supabase) return;
-    if(!confirm("Excluir ficha?")) return;
+    const senha = prompt("Digite a senha para excluir esta ficha:");
+    if(!senha) return alert("Senha obrigatória!");
+    const senhaHash = await gerarHash(senha);
 
     try{
-        const { error } = await supabase.from("fichas").delete().eq("id", id);
+        const { data, error } = await supabase
+            .from("fichas")
+            .select("senha_hash")
+            .eq("id", id)
+            .single();
         if(error) throw error;
+
+        if(data.senha_hash !== senhaHash) return alert("❌ Senha incorreta!");
+
+        const { error: delErr } = await supabase
+            .from("fichas")
+            .delete()
+            .eq("id", id);
+        if(delErr) throw delErr;
+
         listarFichas();
     }catch(err){
-        alert("Erro ao excluir.");
+        alert("Erro ao excluir: " + err.message);
     }
 }
 
 async function carregarFicha(id){
     if(!supabase) return;
+    const senha = prompt("Digite a senha da ficha:");
+    if(!senha) return alert("Senha obrigatória.");
+    const senhaHash = await gerarHash(senha);
 
     try{
         const { data, error } = await supabase
@@ -414,12 +291,11 @@ async function carregarFicha(id){
             .select("*")
             .eq("id", id)
             .single();
-
         if(error) throw error;
 
+        if(data.senha_hash !== senhaHash) return alert("❌ Senha incorreta!");
         preencherFormularioComFicha(data);
         abrir("ficha");
-
     }catch(err){
         alert("Erro ao carregar: " + err.message);
     }
@@ -428,12 +304,11 @@ async function carregarFicha(id){
 function preencherFormularioComFicha(f){
     limparHabilidades();
     limparArmas();
-
     document.getElementById("nomePersonagem").value = f.nome;
-    document.getElementById("inventario").value = f.inventario;
-    document.getElementById("xp").value = f.xp;
+    document.getElementById("inventario").value = f.inventario || "";
+    document.getElementById("xp").value = f.xp || 0;
 
-    (f.habilidade || []).forEach(h => {
+    (Array.isArray(f.habilidade) ? f.habilidade : []).forEach(h => {
         const li = document.createElement("li");
         li.dataset.nome = h.nome;
         li.dataset.desc = h.desc;
@@ -441,7 +316,7 @@ function preencherFormularioComFicha(f){
         document.getElementById("listaHabilidades").appendChild(li);
     });
 
-    (f.arma || []).forEach(a => {
+    (Array.isArray(f.arma) ? f.arma : []).forEach(a => {
         const li = document.createElement("li");
         li.dataset.nome = a.nome;
         li.dataset.dano = a.dano;
