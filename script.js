@@ -483,8 +483,8 @@ async function carregarFicha(id){
         // 🔐 marca que esta ficha já existe (ESSENCIAL)
         fichaAtualId = data.id;
 
-        preencherFormularioComFicha(data);
-        abrir("ficha");
+       abrir("ficha");
+       preencherFormularioComFicha(data);
 
     } catch(err){
         alert("Erro ao carregar ficha: " + err.message);
@@ -493,6 +493,7 @@ async function carregarFicha(id){
 }
 
 function preencherFormularioComFicha(f){
+    montarCampos();
     limparHabilidades();
     limparArmas();
     document.getElementById("nomePersonagem").value = f.nome;
