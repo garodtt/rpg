@@ -306,12 +306,13 @@ function addArma(){
     li.dataset.municaoAtual = m;  // munição atual
     li.dataset.municaoMax = m;    // munição máxima
 
-    li.innerHTML = `
-        <strong>${n}</strong> — Dano: ${d}, Munição: <span class="municao">${m}</span>
-        <button class="menosMunicao">-1</button>
-        <button class="maisMunicao">+1</button>
-        <button class="recarregar" style="display:none">Recarregar</button>
-    `;
+   li.innerHTML = `
+    <strong>${n}</strong> — Dano: ${d}, Munição: <span class="municao">${m}</span>
+    <button class="menosMunicao">-1</button>
+    <button class="maisMunicao">+1</button>
+    <button class="recarregar" style="display:none">Recarregar</button>
+    <button class="removerArma">🗑️</button> <!-- ⬅️ ESTA LINHA -->
+`;
 
     li.querySelector(".menosMunicao").onclick = () => {
         let municao = Number(li.dataset.municaoAtual);
@@ -348,6 +349,10 @@ function addArma(){
         li.querySelector(".municao").textContent = max;
         li.querySelector(".menosMunicao").style.display = "inline";
         li.querySelector(".recarregar").style.display = "none";
+    };
+
+    li.querySelector(".removerArma").onclick = () => {
+        if(confirm(`Remover a arma "${n}"?`)) li.remove();
     };
 
     document.getElementById("listaArmas").appendChild(li);
