@@ -154,6 +154,12 @@ function reiniciarStatus() {
   }
 }
 
+function normalizarId(texto){
+    return texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "_");
+}
 
 /* ================================= */
 /*    SISTEMA – ANTECEDENTES / ATR   */
@@ -170,35 +176,59 @@ atributos.forEach(a => atributoValores[a] = 0);
 function criarLinha(nome, tipo){
     const div = document.createElement("div");
     div.className = "counter-line";
-    const id = (tipo === 'ante' ? 'ante_'+nome : 'atrib_'+nome).replace(/\s+/g,'_');
+
+    const id = (tipo === 'ante'
+        ? 'ante_' + normalizarId(nome)
+        : 'atrib_' + normalizarId(nome)
+    );
+
+    const valorAtual =
+        tipo === "ante"
+            ? antecedenteValores[nome]
+            : atributoValores[nome];
+
     div.innerHTML = `
         <strong>${nome}</strong>
         <span>
             <button onclick="alterarValor('${nome}',-1,'${tipo}')">-</button>
-            <span id="${id}">0</span>
+            <span id="${id}">${valorAtual}</span>
             <button onclick="alterarValor('${nome}',1,'${tipo}')">+</button>
         </span>
     `;
     return div;
 }
 
+
 function alterarValor(nome, delta, tipo){
     if(tipo === "ante"){
         antecedenteValores[nome] = Math.max(0, antecedenteValores[nome] + delta);
-        document.getElementById("ante_"+nome.replace(/\s+/g,'_')).textContent = antecedenteValores[nome];
+
+        const el = document.getElementById(
+            "ante_" + normalizarId(nome)
+        );
+        if(el) el.textContent = antecedenteValores[nome];
+
     } else {
         atributoValores[nome] = Math.max(0, atributoValores[nome] + delta);
-        document.getElementById("atrib_"+nome.replace(/\s+/g,'_')).textContent = atributoValores[nome];
+
+        const el = document.getElementById(
+            "atrib_" + normalizarId(nome)
+        );
+        if(el) el.textContent = atributoValores[nome];
     }
 }
+
 
 function montarCampos(){
     const A = document.getElementById("areaAntecedentes");
     const B = document.getElementById("areaAtributos");
+
+    A.innerHTML = "";
+    B.innerHTML = "";
+
     antecedentes.forEach(a => A.appendChild(criarLinha(a,"ante")));
     atributos.forEach(a => B.appendChild(criarLinha(a,"atrib")));
 }
-montarCampos();
 
 /* ================================= */
 /*                XP                 */
@@ -384,19 +414,21 @@ async function salvarFicha(){
     }));
 
     const payload = {
-        nome,
-        habilidade: habilidades,
-        arma: armas,
-        inventario: document.getElementById("inventario").value.trim(),
-        xp: Number(document.getElementById("xp").value),
-        atributo: { ...atributoValores },
-        antecedente: { ...antecedenteValores },
+    nome,
+    habilidade: habilidades,
+    arma: armas,
+    inventario: document.getElementById("inventario").value.trim(),
+    xp: Number(document.getElementById("xp").value),
 
-        vida: statusValores.vidaAtual,
-        vida_max: statusValores.vidaMax,
-        dor: statusValores.dorAtual,
-        dor_max: statusValores.dorMax
-    };
+    atributo: JSON.stringify(atributoValores),
+    antecedente: JSON.stringify(antecedenteValores),
+
+    vida: statusValores.vidaAtual,
+    vida_max: statusValores.vidaMax,
+    dor: statusValores.dorAtual,
+    dor_max: statusValores.dorMax
+};
+
 
     try {
         let query;
@@ -493,57 +525,55 @@ async function carregarFicha(id){
 }
 
 function preencherFormularioComFicha(f){
+
+    // ===============================
+    // NOME / INVENTÁRIO / XP
+    // ===============================
+    document.getElementById("nomePersonagem").value = f.nome ?? "";
+    document.getElementById("inventario").value = f.inventario ?? "";
+    document.getElementById("xp").value = f.xp ?? 0;
+
+    // ===============================
+    // ANTECEDENTES (JSON → OBJETO)
+    // ===============================
+    const antecedentesDB = typeof f.antecedente === "string"
+        ? JSON.parse(f.antecedente)
+        : f.antecedente || {};
+
+    antecedentes.forEach(nome => {
+        antecedenteValores[nome] = antecedentesDB[nome] ?? 0;
+    });
+
+    // ===============================
+    // ATRIBUTOS (JSON → OBJETO)
+    // ===============================
+    const atributosDB = typeof f.atributo === "string"
+        ? JSON.parse(f.atributo)
+        : f.atributo || {};
+
+    atributos.forEach(nome => {
+        atributoValores[nome] = atributosDB[nome] ?? 0;
+    });
+
+    // ===============================
+    // STATUS
+    // ===============================
+    statusValores.vidaMax   = f.vida_max;
+    statusValores.dorMax    = f.dor_max;
+    statusValores.vidaAtual = f.vida;
+    statusValores.dorAtual  = f.dor;
+
+    document.getElementById("vidaMaxInput").value = f.vida_max;
+    document.getElementById("dorMaxInput").value  = f.dor_max;
+
+    // ===============================
+    // MONTA A UI COM VALORES CERTOS
+    // ===============================
     montarCampos();
-    limparHabilidades();
-    limparArmas();
-    document.getElementById("nomePersonagem").value = f.nome;
-    document.getElementById("inventario").value = f.inventario || "";
-    document.getElementById("xp").value = f.xp || 0;
-
-    (Array.isArray(f.habilidade) ? f.habilidade : []).forEach(h => {
-        const li = document.createElement("li");
-        li.dataset.nome = h.nome;
-        li.dataset.desc = h.desc;
-        li.innerHTML = `<strong>${h.nome}</strong> — ${h.desc}`;
-        document.getElementById("listaHabilidades").appendChild(li);
-    });
-
-    (Array.isArray(f.arma) ? f.arma : []).forEach(a => {
-        const li = document.createElement("li");
-        li.dataset.nome = a.nome;
-        li.dataset.dano = a.dano;
-        li.dataset.municao = a.municao;
-        li.innerHTML = `<strong>${a.nome}</strong> — Dano: ${a.dano}, Munição: ${a.municao}`;
-        document.getElementById("listaArmas").appendChild(li);
-    });
-
-    Object.keys(antecedenteValores).forEach(k => {
-        const val = f.antecedente?.[k] ?? 0;
-        antecedenteValores[k] = val;
-        document.getElementById("ante_"+k.replace(/\s+/g,'_')).textContent = val;
-    });
-
-    Object.keys(atributoValores).forEach(k => {
-        const val = f.atributo?.[k] ?? 0;
-        atributoValores[k] = val;
-        document.getElementById("atrib_"+k.replace(/\s+/g,'_')).textContent = val;
-    });
-
-      // 🔁 restaurar STATUS
-  statusValores.vidaMax = f.vida_max;
-  statusValores.dorMax = f.dor_max;
-  statusValores.vidaAtual = f.vida;
-  statusValores.dorAtual = f.dor;
-
-  // atualizar inputs visuais
-  document.getElementById("vidaMaxInput").value = f.vida_max;
-  document.getElementById("dorMaxInput").value = f.dor_max;
-
-  montarStatus();
-  aplicarDano();
-
-    
+    montarStatus();
+    aplicarDano();
 }
+
 
 /* ================================= */
 /*        GERENCIAMENTO              */
@@ -709,15 +739,19 @@ function novaFicha() {
     limparArmas();
 
     // Resetar antecedentes e atributos
-    Object.keys(antecedenteValores).forEach(k => {
-        antecedenteValores[k] = 0;
-        document.getElementById("ante_" + k.replace(/\s+/g,'_')).textContent = 0;
+   Object.keys(antecedenteValores).forEach(k => {
+    antecedenteValores[k] = 0;
+    const el = document.getElementById("ante_" + normalizarId(k));
+    if (el) el.textContent = 0;
     });
 
+
     Object.keys(atributoValores).forEach(k => {
-        atributoValores[k] = 0;
-        document.getElementById("atrib_" + k.replace(/\s+/g,'_')).textContent = 0;
+    atributoValores[k] = 0;
+    const el = document.getElementById("atrib_" + normalizarId(k));
+    if (el) el.textContent = 0;
     });
+
 
     // Inicializar status com valores padrão
     inicializarStatus(10, 10);
@@ -725,16 +759,7 @@ function novaFicha() {
     // Abrir tela da ficha
     abrir("ficha");
 }
-
-
-/* ================================= */
-/*           TROCAR TELAS            */
-/* ================================= */
-function abrir(nome){
-    document.querySelectorAll(".tela").forEach(t => t.style.display="none");
-    document.getElementById(nome).style.display = "block";
-}
-
+montarCampos();
 // ============================
 // FUNÇÃO PARA ABRIR FICHAS SALVAS
 // ============================
@@ -748,9 +773,8 @@ function abrirFichas() {
 /* AUTO-LISTAR FICHAS AO ABRIR       */
 /* ================================= */
 document.addEventListener("DOMContentLoaded", () => {
-    listarFichas();
+    listarFichas();   
 });
-
 
 
 
