@@ -90,10 +90,36 @@
 
   <ul id="listaArmas"></ul>
 </div>
-    <div class="box">
-      <h2>Inventário</h2>
-      <textarea id="inventario" rows="4"></textarea>
-    </div>
+   <div class="box">
+  <h2>Inventário</h2>
+
+  <div class="linha">
+    <label>
+      Peso Máximo
+      <input id="pesoMax" type="number" min="0" value="10">
+    </label>
+
+    <label>
+      Peso Atual
+      <input id="pesoAtual" type="number" value="0" readonly>
+    </label>
+  </div>
+
+  <hr>
+
+  <input id="itemNome" placeholder="Nome do item">
+  <input id="itemDesc" placeholder="Descrição">
+  <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
+  <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
+
+  <div class="rowBtns">
+    <button onclick="addItem()">Adicionar Item</button>
+    <button onclick="limparInventario()">Limpar</button>
+  </div>
+
+  <ul id="listaInventario"></ul>
+</div>
+
 
     <div class="box">
       <h2>XP</h2>
