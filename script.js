@@ -303,23 +303,30 @@ function limparHabilidades(){ document.getElementById("listaHabilidades").innerH
 /* ================================= */
 function addArma(){
     const n = document.getElementById("armaNome").value.trim();
-    const d = document.getElementById("armaDano").value.trim();
-    const m = Number(document.getElementById("armaMunicao").value.trim());
-    if(!n || isNaN(m)) return;
+    const d = Number(document.getElementById("armaDano").value);
+    const tipo = document.getElementById("armaTipoDano").value;
+    const m = Number(document.getElementById("armaMunicao").value);
+
+    if(!n || isNaN(d) || isNaN(m)) return;
 
     const li = document.createElement("li");
+
     li.dataset.nome = n;
     li.dataset.dano = d;
-    li.dataset.municaoAtual = m;  // munição atual
-    li.dataset.municaoMax = m;    // munição máxima
+    li.dataset.tipoDano = tipo;
+    li.dataset.municaoAtual = m;
+    li.dataset.municaoMax = m;
 
-   li.innerHTML = `
-    <strong>${n}</strong> — Dano: ${d}, Munição: <span class="municao">${m}</span>
-    <button class="menosMunicao">-1</button>
-    <button class="maisMunicao">+1</button>
-    <button class="recarregar" style="display:none">Recarregar</button>
-    <button class="removerArma">🗑️</button> <!-- ⬅️ ESTA LINHA -->
-`;
+    li.innerHTML = `
+      <strong>${n}</strong>
+      — Dano: ${d} (${tipo})
+      — Munição: <span class="municao">${m}</span>
+
+      <button class="menosMunicao">-1</button>
+      <button class="maisMunicao">+1</button>
+      <button class="recarregar" style="display:none">Recarregar</button>
+      <button class="removerArma">🗑️</button>
+    `;
 
     li.querySelector(".menosMunicao").onclick = () => {
         let municao = Number(li.dataset.municaoAtual);
