@@ -71,17 +71,25 @@
     </div>
 
     <div class="box">
-      <h2>Armas</h2>
-      <input id="armaNome" placeholder="Nome da arma" />
-      <input id="armaDano" type="number" placeholder="Dano" />
-      <input id="armaMunicao" type="number" placeholder="Munição" />
-      <div class="rowBtns">
-        <button onclick="addArma()">Adicionar</button>
-        <button onclick="limparArmas()">Limpar</button>
-      </div>
-      <ul id="listaArmas"></ul>
-    </div>
+        
+  <h2>Armas</h2>
 
+  <input id="armaNome" placeholder="Nome da arma" />
+  <input id="armaDano" type="number" placeholder="Dano" />
+  <select id="armaTipoDano">
+    <option value="vida">Vida</option>
+    <option value="dor">Dor</option>
+  </select>
+
+  <input id="armaMunicao" type="number" placeholder="Munição" />
+
+  <div class="rowBtns">
+    <button onclick="addArma()">Adicionar</button>
+    <button onclick="limparArmas()">Limpar</button>
+  </div>
+
+  <ul id="listaArmas"></ul>
+</div>
     <div class="box">
       <h2>Inventário</h2>
       <textarea id="inventario" rows="4"></textarea>
