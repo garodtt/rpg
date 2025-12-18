@@ -412,7 +412,7 @@ function limparArmas() {
 let pesoAtual = 0;
 
 function atualizarPesoAtual(){
-    document.getElementById("pesoAtual").value = pesoAtual.toFixed(2);
+    document.getElementById("pesoAtual").value = pesoAtual;
 }
 
 function limparInventario(){
@@ -614,6 +614,43 @@ async function carregarFicha(id){
 }
 
 function preencherFormularioComFicha(f){
+
+    // ===============================
+    // INVENTÁRIO + PESO
+    // ===============================
+    limparInventario();
+
+    document.getElementById("pesoMax").value = f.peso_max ?? 10;
+
+    if (Array.isArray(f.inventario)) {
+        f.inventario.forEach(item => {
+            const pesoTotal = item.peso * item.quantidade;
+            pesoAtual += pesoTotal;
+
+            const li = document.createElement("li");
+            li.dataset.nome = item.nome;
+            li.dataset.desc = item.descricao;
+            li.dataset.peso = item.peso;
+            li.dataset.qtd  = item.quantidade;
+
+            li.innerHTML = `
+            <strong>${item.nome}</strong> (${item.quantidade}x)
+            — Peso: ${pesoTotal}
+            <br><em>${item.descricao}</em>
+            <button class="removerItem">🗑️</button>
+            `;
+
+            li.querySelector(".removerItem").onclick = () => {
+                pesoAtual -= item.peso * item.quantidade;
+                atualizarPesoAtual();
+                li.remove();
+            };
+
+            document.getElementById("listaInventario").appendChild(li);
+        });
+    }
+
+    atualizarPesoAtual();
 
     // ===============================
     // NOME / INVENTÁRIO / XP
@@ -836,24 +873,6 @@ function novaFicha() {
 
     abrir("ficha");
 }
-
-
-     function addItem(){
-    const nome = document.getElementById("itemNome").value.trim();
-    const desc = document.getElementById("itemDesc").value.trim();
-    const peso = Number(document.getElementById("itemPeso").value);
-    const qtd  = Number(document.getElementById("itemQtd").value);
-    const pesoMax = Number(document.getElementById("pesoMax").value);
-
-    if(!nome || isNaN(peso) || isNaN(qtd) || qtd <= 0) return;
-
-    const pesoTotal = peso * qtd;
-
-    if(pesoAtual + pesoTotal > pesoMax){
-        alert("🚫 Peso máximo excedido!");
-        return;
-    }
-    }
 
     // Resetar antecedentes e atributos
    Object.keys(antecedenteValores).forEach(k => {
