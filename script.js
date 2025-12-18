@@ -614,43 +614,6 @@ async function carregarFicha(id){
         console.error(err);
     }
 
-// ===============================
-// INVENTÁRIO
-// ===============================
-limparInventario();
-
-document.getElementById("pesoMax").value = f.peso_max ?? 10;
-
-if (Array.isArray(f.inventario)) {
-    f.inventario.forEach(item => {
-        const pesoTotal = item.peso * item.quantidade;
-        pesoAtual += pesoTotal;
-
-        const li = document.createElement("li");
-        li.dataset.nome = item.nome;
-        li.dataset.descricao = item.descricao;
-        li.dataset.peso = item.peso;
-        li.dataset.quantidade = item.quantidade;
-
-        li.innerHTML = `
-            <strong>${item.nome}</strong> (${item.quantidade}x)
-            — Peso: ${pesoTotal}
-            <br><em>${item.descricao}</em>
-            <button class="removerItem">🗑️</button>
-        `;
-
-        li.querySelector(".removerItem").onclick = () => {
-            pesoAtual -= item.peso * item.quantidade;
-            atualizarPesoAtual();
-            li.remove();
-        };
-
-        document.getElementById("listaInventario").appendChild(li);
-    });
-}
-
-atualizarPesoAtual();
-
 }
 
 function preencherFormularioComFicha(f){
@@ -700,6 +663,43 @@ function preencherFormularioComFicha(f){
     montarCampos();
     montarStatus();
     aplicarDano();
+    // ===============================
+    // INVENTÁRIO
+    // ===============================
+    limparInventario();
+
+    document.getElementById("pesoMax").value = f.peso_max ?? 10;
+
+    if (Array.isArray(f.inventario)) {
+        f.inventario.forEach(item => {
+            const pesoTotal = item.peso * item.quantidade;
+            pesoAtual += pesoTotal;
+
+            const li = document.createElement("li");
+            li.dataset.nome = item.nome;
+            li.dataset.descricao = item.descricao;
+            li.dataset.peso = item.peso;
+            li.dataset.quantidade = item.quantidade;
+
+            li.innerHTML = `
+                <strong>${item.nome}</strong> (${item.quantidade}x)
+                — Peso: ${pesoTotal}
+                <br><em>${item.descricao}</em>
+                <button class="removerItem">🗑️</button>
+            `;
+
+            li.querySelector(".removerItem").onclick = () => {
+                pesoAtual -= item.peso * item.quantidade;
+                atualizarPesoAtual();
+                li.remove();
+            };
+
+            document.getElementById("listaInventario").appendChild(li);
+        });
+    }
+
+    atualizarPesoAtual();
+
 }
 
 
