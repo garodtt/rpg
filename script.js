@@ -421,6 +421,50 @@ function limparInventario(){
     atualizarPesoAtual();
 }
 
+function addItem(){
+    const nome = document.getElementById("itemNome").value.trim();
+    const desc = document.getElementById("itemDesc").value.trim();
+    const peso = Number(document.getElementById("itemPeso").value);
+    const qtd  = Number(document.getElementById("itemQtd").value);
+    const pesoMax = Number(document.getElementById("pesoMax").value);
+
+    if(!nome || isNaN(peso) || isNaN(qtd) || qtd <= 0) return;
+
+    const pesoTotal = peso * qtd;
+
+    if(pesoAtual + pesoTotal > pesoMax){
+        alert("🚫 Peso máximo excedido!");
+        return;
+    }
+
+    pesoAtual += pesoTotal;
+    atualizarPesoAtual();
+
+    const li = document.createElement("li");
+    li.dataset.nome = nome;
+    li.dataset.desc = desc;
+    li.dataset.peso = peso;
+    li.dataset.qtd  = qtd;
+
+    li.innerHTML = `
+      <strong>${nome}</strong> (${qtd}x)
+      — Peso: ${pesoTotal}
+      <br><em>${desc}</em>
+      <button class="removerItem">🗑️</button>
+    `;
+
+    li.querySelector(".removerItem").onclick = () => {
+        pesoAtual -= peso * qtd;
+        atualizarPesoAtual();
+        li.remove();
+    };
+
+    document.getElementById("listaInventario").appendChild(li);
+
+    itemNome.value = itemDesc.value = itemPeso.value = "";
+    itemQtd.value = 1;
+}
+
 
 
 /* ================================= */
@@ -575,7 +619,6 @@ function preencherFormularioComFicha(f){
     // NOME / INVENTÁRIO / XP
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
-    document.getElementById("inventario").value = f.inventario ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
 
     // ===============================
@@ -774,16 +817,28 @@ async function listarFichas() {
 /*           NOVA FICHA              */
 /* ================================= */
 function novaFicha() { 
-    fichaAtualId = null; // limpa referência
+    fichaAtualId = null;
+
     document.getElementById("nomePersonagem").value = "";
-    document.getElementById("inventario").value = "";
     document.getElementById("xp").value = 0;
 
-    // Limpar habilidades e armas
     limparHabilidades();
     limparArmas();
+    limparInventario();
 
-    function addItem(){
+    document.getElementById("pesoMax").value = 10;
+
+    Object.keys(antecedenteValores).forEach(k => antecedenteValores[k] = 0);
+    Object.keys(atributoValores).forEach(k => atributoValores[k] = 0);
+
+    inicializarStatus(10, 10);
+    montarCampos();
+
+    abrir("ficha");
+}
+
+
+     function addItem(){
     const nome = document.getElementById("itemNome").value.trim();
     const desc = document.getElementById("itemDesc").value.trim();
     const peso = Number(document.getElementById("itemPeso").value);
@@ -798,35 +853,7 @@ function novaFicha() {
         alert("🚫 Peso máximo excedido!");
         return;
     }
-
-    pesoAtual += pesoTotal;
-    atualizarPesoAtual();
-
-    const li = document.createElement("li");
-    li.dataset.nome = nome;
-    li.dataset.desc = desc;
-    li.dataset.peso = peso;
-    li.dataset.qtd  = qtd;
-
-    li.innerHTML = `
-      <strong>${nome}</strong> (${qtd}x)
-      — Peso: ${pesoTotal}
-      <br><em>${desc}</em>
-      <button class="removerItem">🗑️</button>
-    `;
-
-    li.querySelector(".removerItem").onclick = () => {
-        pesoAtual -= peso * qtd;
-        atualizarPesoAtual();
-        li.remove();
-    };
-
-    document.getElementById("listaInventario").appendChild(li);
-
-    itemNome.value = itemDesc.value = itemPeso.value = "";
-    itemQtd.value = 1;
     }
-
 
     // Resetar antecedentes e atributos
    Object.keys(antecedenteValores).forEach(k => {
@@ -852,7 +879,6 @@ function novaFicha() {
     limparInventario();
     document.getElementById("pesoMax").value = 10;
 
-}
 montarCampos();
 // ============================
 // FUNÇÃO PARA ABRIR FICHAS SALVAS
