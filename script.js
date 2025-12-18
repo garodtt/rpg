@@ -407,32 +407,34 @@ function limparArmas() {
 }
 
 /* ================================= */
-/*           INVENTÁRIO              */
+/*            INVENTÁRIO             */
 /* ================================= */
+
 let pesoAtual = 0;
 
-function atualizarPesoAtual(){
+function atualizarPesoAtual() {
     document.getElementById("pesoAtual").value = pesoAtual;
 }
 
-function limparInventario(){
+function limparInventario() {
     document.getElementById("listaInventario").innerHTML = "";
     pesoAtual = 0;
     atualizarPesoAtual();
 }
 
-function addItem(){
+function addItem() {
     const nome = document.getElementById("itemNome").value.trim();
-    const desc = document.getElementById("itemDesc").value.trim();
+    const descricao = document.getElementById("itemDesc").value.trim();
     const peso = Number(document.getElementById("itemPeso").value);
-    const qtd  = Number(document.getElementById("itemQtd").value);
+    const quantidade = Number(document.getElementById("itemQtd").value);
     const pesoMax = Number(document.getElementById("pesoMax").value);
 
-    if(!nome || isNaN(peso) || isNaN(qtd) || qtd <= 0) return;
+    if (!nome || isNaN(peso) || isNaN(quantidade) || quantidade <= 0) return;
 
-    const pesoTotal = peso * qtd;
+    const pesoTotal = peso * quantidade;
 
-    if(pesoAtual + pesoTotal > pesoMax){
+    // 🚫 BLOQUEIO DE PESO
+    if (pesoAtual + pesoTotal > pesoMax) {
         alert("🚫 Peso máximo excedido!");
         return;
     }
@@ -442,26 +444,29 @@ function addItem(){
 
     const li = document.createElement("li");
     li.dataset.nome = nome;
-    li.dataset.desc = desc;
+    li.dataset.descricao = descricao;
     li.dataset.peso = peso;
-    li.dataset.qtd  = qtd;
+    li.dataset.quantidade = quantidade;
 
     li.innerHTML = `
-      <strong>${nome}</strong> (${qtd}x)
-      — Peso: ${pesoTotal}
-      <br><em>${desc}</em>
-      <button class="removerItem">🗑️</button>
+        <strong>${nome}</strong> (${quantidade}x)
+        — Peso: ${pesoTotal}
+        <br><em>${descricao}</em>
+        <button class="removerItem">🗑️</button>
     `;
 
     li.querySelector(".removerItem").onclick = () => {
-        pesoAtual -= peso * qtd;
+        pesoAtual -= peso * quantidade;
         atualizarPesoAtual();
         li.remove();
     };
 
     document.getElementById("listaInventario").appendChild(li);
 
-    itemNome.value = itemDesc.value = itemPeso.value = "";
+    // limpa inputs
+    itemNome.value = "";
+    itemDesc.value = "";
+    itemPeso.value = "";
     itemQtd.value = 1;
 }
 
@@ -491,22 +496,20 @@ async function salvarFicha(){
         dano: Number(li.dataset.dano),
         municao: Number(li.dataset.municao)
     }));
-
+    
     const inventario = [...document.querySelectorAll("#listaInventario li")].map(li => ({
     nome: li.dataset.nome,
-    descricao: li.dataset.desc,
+    descricao: li.dataset.descricao,
     peso: Number(li.dataset.peso),
-    quantidade: Number(li.dataset.qtd)
+    quantidade: Number(li.dataset.quantidade)
     }));
-
 
     const payload = {
     nome,
     habilidade: habilidades,
     arma: armas,
-    inventario: inventario,
+    inventario,
     peso_max: Number(document.getElementById("pesoMax").value),
-
     xp: Number(document.getElementById("xp").value),
 
     atributo: JSON.stringify(atributoValores),
@@ -517,7 +520,6 @@ async function salvarFicha(){
     dor: statusValores.dorAtual,
     dor_max: statusValores.dorMax
 };
-
 
     try {
         let query;
@@ -611,51 +613,53 @@ async function carregarFicha(id){
         alert("Erro ao carregar ficha: " + err.message);
         console.error(err);
     }
+
+// ===============================
+// INVENTÁRIO
+// ===============================
+limparInventario();
+
+document.getElementById("pesoMax").value = f.peso_max ?? 10;
+
+if (Array.isArray(f.inventario)) {
+    f.inventario.forEach(item => {
+        const pesoTotal = item.peso * item.quantidade;
+        pesoAtual += pesoTotal;
+
+        const li = document.createElement("li");
+        li.dataset.nome = item.nome;
+        li.dataset.descricao = item.descricao;
+        li.dataset.peso = item.peso;
+        li.dataset.quantidade = item.quantidade;
+
+        li.innerHTML = `
+            <strong>${item.nome}</strong> (${item.quantidade}x)
+            — Peso: ${pesoTotal}
+            <br><em>${item.descricao}</em>
+            <button class="removerItem">🗑️</button>
+        `;
+
+        li.querySelector(".removerItem").onclick = () => {
+            pesoAtual -= item.peso * item.quantidade;
+            atualizarPesoAtual();
+            li.remove();
+        };
+
+        document.getElementById("listaInventario").appendChild(li);
+    });
+}
+
+atualizarPesoAtual();
+
 }
 
 function preencherFormularioComFicha(f){
 
     // ===============================
-    // INVENTÁRIO + PESO
-    // ===============================
-    limparInventario();
-
-    document.getElementById("pesoMax").value = f.peso_max ?? 10;
-
-    if (Array.isArray(f.inventario)) {
-        f.inventario.forEach(item => {
-            const pesoTotal = item.peso * item.quantidade;
-            pesoAtual += pesoTotal;
-
-            const li = document.createElement("li");
-            li.dataset.nome = item.nome;
-            li.dataset.desc = item.descricao;
-            li.dataset.peso = item.peso;
-            li.dataset.qtd  = item.quantidade;
-
-            li.innerHTML = `
-            <strong>${item.nome}</strong> (${item.quantidade}x)
-            — Peso: ${pesoTotal}
-            <br><em>${item.descricao}</em>
-            <button class="removerItem">🗑️</button>
-            `;
-
-            li.querySelector(".removerItem").onclick = () => {
-                pesoAtual -= item.peso * item.quantidade;
-                atualizarPesoAtual();
-                li.remove();
-            };
-
-            document.getElementById("listaInventario").appendChild(li);
-        });
-    }
-
-    atualizarPesoAtual();
-
-    // ===============================
     // NOME / INVENTÁRIO / XP
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
+    document.getElementById("inventario").value = f.inventario ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
 
     // ===============================
@@ -854,25 +858,16 @@ async function listarFichas() {
 /*           NOVA FICHA              */
 /* ================================= */
 function novaFicha() { 
-    fichaAtualId = null;
-
+    fichaAtualId = null; // limpa referência
     document.getElementById("nomePersonagem").value = "";
     document.getElementById("xp").value = 0;
 
+    // Limpar habilidades e armas
     limparHabilidades();
     limparArmas();
     limparInventario();
-
     document.getElementById("pesoMax").value = 10;
 
-    Object.keys(antecedenteValores).forEach(k => antecedenteValores[k] = 0);
-    Object.keys(atributoValores).forEach(k => atributoValores[k] = 0);
-
-    inicializarStatus(10, 10);
-    montarCampos();
-
-    abrir("ficha");
-}
 
     // Resetar antecedentes e atributos
    Object.keys(antecedenteValores).forEach(k => {
@@ -894,10 +889,7 @@ function novaFicha() {
 
     // Abrir tela da ficha
     abrir("ficha");
-
-    limparInventario();
-    document.getElementById("pesoMax").value = 10;
-
+}
 montarCampos();
 // ============================
 // FUNÇÃO PARA ABRIR FICHAS SALVAS
