@@ -659,7 +659,6 @@ function preencherFormularioComFicha(f){
     // NOME / INVENTÁRIO / XP
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
-    document.getElementById("inventario").value = f.inventario ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
 
     // ===============================
