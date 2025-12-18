@@ -509,7 +509,10 @@ async function salvarFicha(){
     habilidade: habilidades,
     arma: armas,
     inventario,
+
     peso_max: Number(document.getElementById("pesoMax").value),
+    dinheiro: Number(document.getElementById("dinheiro").value) || 0,
+
     xp: Number(document.getElementById("xp").value),
 
     atributo: JSON.stringify(atributoValores),
@@ -520,6 +523,7 @@ async function salvarFicha(){
     dor: statusValores.dorAtual,
     dor_max: statusValores.dorMax
 };
+
 
     try {
         let query;
@@ -623,6 +627,8 @@ function preencherFormularioComFicha(f){
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
+    document.getElementById("dinheiro").value = f.dinheiro ?? 0;
+
 
     // ===============================
     // ANTECEDENTES (JSON → OBJETO)
@@ -860,6 +866,7 @@ function novaFicha() {
     fichaAtualId = null; // limpa referência
     document.getElementById("nomePersonagem").value = "";
     document.getElementById("xp").value = 0;
+    document.getElementById("dinheiro").value = 0;
 
     // Limpar habilidades e armas
     limparHabilidades();
