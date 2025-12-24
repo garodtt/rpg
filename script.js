@@ -6,8 +6,9 @@ const SUPA_URL = "https://oafqjrzbkgvntwlekmlq.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hZnFqcnpia2d2bnR3bGVrbWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNDQ0NzYsImV4cCI6MjA4MDkyMDQ3Nn0.OPw0x8cpTRgp4IoC42mpU9H1Ld9K2cXGjBAJffAVX3I";
 
 const supabase = window.supabase
-    ? window.supabase.createClient(SUPA_URL, SUPA_KEY)
-    : null;
+    ? supabaseJs.createClient(SUPA_URL, SUPA_KEY)
+    : window.supabase?.createClient(SUPA_URL, SUPA_KEY);
+
 
 if (!supabase) {
     console.error("❌ Supabase client não encontrado.");
@@ -255,24 +256,38 @@ const acoes = [
 ];
 
 const contadores = Array(acoes.length).fill(0);
-const listaAcoes = document.getElementById("listaAcoes");
+document.addEventListener("DOMContentLoaded", () => {
 
-acoes.forEach((acao,i)=>{
-    const row=document.createElement("div");
-    row.className="acao-item";
-    row.innerHTML=`
-      <div><strong>${acao.nome}</strong> (+${acao.xp} XP) — <span id="cx${i}">0</span>x</div>
-      <button onclick="ganharXP(${i})">XP</button>
-    `;
-    listaAcoes.appendChild(row);
+    const listaAcoes = document.getElementById("listaAcoes");
+
+    acoes.forEach((acao,i)=>{
+        const row = document.createElement("div");
+        row.className = "acao-item";
+        row.innerHTML = `
+          <div>
+            <strong>${acao.nome}</strong> (+${acao.xp} XP)
+            — <span id="cx${i}">0</span>x
+          </div>
+          <button onclick="ganharXP(${i})">XP</button>
+        `;
+        listaAcoes.appendChild(row);
+    });
+
+    montarCampos();
+    listarFichas();
 });
 
 function ganharXP(i){
-    const xpInput = document.getElementById("xp");
-    xpInput.value = Number(xpInput.value) + acoes[i].xp;
     contadores[i]++;
     document.getElementById("cx"+i).textContent = contadores[i];
+
+    const total = contadores.reduce(
+        (s, v, idx) => s + v * acoes[idx].xp, 0
+    );
+
+    document.getElementById("xp").value = total;
 }
+
 
 /* ================================= */
 /*           HABILIDADES             */
@@ -381,7 +396,7 @@ function addArma(){
 /* ================================= */
 
 function atirar(liArma) {
-    let municao = Number(liArma.dataset.municao || 0);
+    let municao = Number(liArma.dataset.municaoAtual || 0);
     const dano = Number(liArma.dataset.dano || 0);
 
     if (municao <= 0) {
@@ -394,7 +409,11 @@ function atirar(liArma) {
 
     liArma.innerHTML = `<strong>${liArma.dataset.nome}</strong> — Dano: ${dano}, Munição: ${municao}`;
 
-    aplicarDano(dano);
+   function aplicarDanoDireto(dano) {
+    statusValores.vidaAtual = Math.max(0, statusValores.vidaAtual - dano);
+    atualizarStatus();
+}
+
 
     
 }
@@ -509,7 +528,10 @@ async function salvarFicha(){
     habilidade: habilidades,
     arma: armas,
     inventario,
+
     peso_max: Number(document.getElementById("pesoMax").value),
+    dinheiro: Number(document.getElementById("dinheiro").value) || 0,
+
     xp: Number(document.getElementById("xp").value),
 
     atributo: JSON.stringify(atributoValores),
@@ -520,6 +542,7 @@ async function salvarFicha(){
     dor: statusValores.dorAtual,
     dor_max: statusValores.dorMax
 };
+
 
     try {
         let query;
@@ -623,6 +646,8 @@ function preencherFormularioComFicha(f){
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
+    document.getElementById("dinheiro").value = f.dinheiro ?? 0;
+
 
     // ===============================
     // ANTECEDENTES (JSON → OBJETO)
@@ -860,6 +885,7 @@ function novaFicha() {
     fichaAtualId = null; // limpa referência
     document.getElementById("nomePersonagem").value = "";
     document.getElementById("xp").value = 0;
+    document.getElementById("dinheiro").value = 0;
 
     // Limpar habilidades e armas
     limparHabilidades();
@@ -889,7 +915,6 @@ function novaFicha() {
     // Abrir tela da ficha
     abrir("ficha");
 }
-montarCampos();
 // ============================
 // FUNÇÃO PARA ABRIR FICHAS SALVAS
 // ============================
@@ -899,12 +924,6 @@ function abrirFichas() {
 }
 
 
-/* ================================= */
-/* AUTO-LISTAR FICHAS AO ABRIR       */
-/* ================================= */
-document.addEventListener("DOMContentLoaded", () => {
-    listarFichas();   
-});
 
 
 
