@@ -255,24 +255,27 @@ const acoes = [
 ];
 
 const contadores = Array(acoes.length).fill(0);
-const listaAcoes = document.getElementById("listaAcoes");
+document.addEventListener("DOMContentLoaded", () => {
 
-acoes.forEach((acao,i)=>{
-    const row=document.createElement("div");
-    row.className="acao-item";
-    row.innerHTML=`
-      <div><strong>${acao.nome}</strong> (+${acao.xp} XP) — <span id="cx${i}">0</span>x</div>
-      <button onclick="ganharXP(${i})">XP</button>
-    `;
-    listaAcoes.appendChild(row);
+    const listaAcoes = document.getElementById("listaAcoes");
+
+    acoes.forEach((acao,i)=>{
+        const row = document.createElement("div");
+        row.className = "acao-item";
+        row.innerHTML = `
+          <div>
+            <strong>${acao.nome}</strong> (+${acao.xp} XP)
+            — <span id="cx${i}">0</span>x
+          </div>
+          <button onclick="ganharXP(${i})">XP</button>
+        `;
+        listaAcoes.appendChild(row);
+    });
+
+    montarCampos();
+    listarFichas();
 });
 
-function ganharXP(i){
-    const xpInput = document.getElementById("xp");
-    xpInput.value = Number(xpInput.value) + acoes[i].xp;
-    contadores[i]++;
-    document.getElementById("cx"+i).textContent = contadores[i];
-}
 
 /* ================================= */
 /*           HABILIDADES             */
@@ -381,7 +384,7 @@ function addArma(){
 /* ================================= */
 
 function atirar(liArma) {
-    let municao = Number(liArma.dataset.municao || 0);
+    let municao = Number(liArma.dataset.municaoAtual || 0);
     const dano = Number(liArma.dataset.dano || 0);
 
     if (municao <= 0) {
@@ -394,7 +397,11 @@ function atirar(liArma) {
 
     liArma.innerHTML = `<strong>${liArma.dataset.nome}</strong> — Dano: ${dano}, Munição: ${municao}`;
 
-    aplicarDano(dano);
+   function aplicarDanoDireto(dano) {
+    statusValores.vidaAtual = Math.max(0, statusValores.vidaAtual - dano);
+    atualizarStatus();
+}
+
 
     
 }
@@ -896,7 +903,6 @@ function novaFicha() {
     // Abrir tela da ficha
     abrir("ficha");
 }
-montarCampos();
 // ============================
 // FUNÇÃO PARA ABRIR FICHAS SALVAS
 // ============================
@@ -912,7 +918,6 @@ function abrirFichas() {
 document.addEventListener("DOMContentLoaded", () => {
     listarFichas();   
 });
-
 
 
 
