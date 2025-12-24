@@ -1,30 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sistema Oeste Selvagem</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema Oeste Selvagem</title>
+<link rel="stylesheet" href="style.css">
 
-  <link rel="stylesheet" href="style.css">
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
-  <!-- Seu JS -->
-  <script defer src="script.js"></script>
+<!-- Seu script -->
+<script defer src="script.js"></script>
 </head>
-
 <body>
 
 <header>🏜️ Oeste Selvagem</header>
 
-<!-- ======================= HOME =====================-->
+<!-- ================== HOME ================== -->
 <div id="home" class="tela" style="display:block;">
-  <a class="btn" onclick="abrir('ficha')">📘 Criar Ficha</a>
-  <a class="btn" onclick="abrir('gerenciamento')">⚙️ Gerenciamento</a>
-  <a class="btn" onclick="abrirFichas()">📂 Fichas Salvas</a>
+    <a class="btn" onclick="abrir('ficha')">📘 Criar Ficha</a>
+    <a class="btn" onclick="abrir('gerenciamento')">⚙️ Gerenciamento de Personagens</a>
+    <a class="btn" onclick="abrirFichas()">📂 Fichas Salvas</a>
 </div>
-
 
 <!-- ================== FICHA ================== -->
 <div id="ficha" class="tela" style="display:none;">
@@ -74,17 +71,7 @@
     </div>
 
     <div class="box">
-        <h2>Dinheiro</h2>
-        <input
-            id="dinheiro"
-            type="number"
-            min="0"
-            step="1"
-            placeholder="0"
-        />
-    </div>
-
-    <div class="box"> 
+        
   <h2>Armas</h2>
 
   <input id="armaNome" placeholder="Nome da arma" />
