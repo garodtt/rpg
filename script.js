@@ -406,71 +406,6 @@ function limparArmas() {
     document.getElementById("listaArmas").innerHTML = "";
 }
 
-/* ================================= */
-/*            INVENTÁRIO             */
-/* ================================= */
-
-let pesoAtual = 0;
-
-function atualizarPesoAtual() {
-    document.getElementById("pesoAtual").value = pesoAtual;
-}
-
-function limparInventario() {
-    document.getElementById("listaInventario").innerHTML = "";
-    pesoAtual = 0;
-    atualizarPesoAtual();
-}
-
-function addItem() {
-    const nome = document.getElementById("itemNome").value.trim();
-    const descricao = document.getElementById("itemDesc").value.trim();
-    const peso = Number(document.getElementById("itemPeso").value);
-    const quantidade = Number(document.getElementById("itemQtd").value);
-    const pesoMax = Number(document.getElementById("pesoMax").value);
-
-    if (!nome || isNaN(peso) || isNaN(quantidade) || quantidade <= 0) return;
-
-    const pesoTotal = peso * quantidade;
-
-    // 🚫 BLOQUEIO DE PESO
-    if (pesoAtual + pesoTotal > pesoMax) {
-        alert("🚫 Peso máximo excedido!");
-        return;
-    }
-
-    pesoAtual += pesoTotal;
-    atualizarPesoAtual();
-
-    const li = document.createElement("li");
-    li.dataset.nome = nome;
-    li.dataset.descricao = descricao;
-    li.dataset.peso = peso;
-    li.dataset.quantidade = quantidade;
-
-    li.innerHTML = `
-        <strong>${nome}</strong> (${quantidade}x)
-        — Peso: ${pesoTotal}
-        <br><em>${descricao}</em>
-        <button class="removerItem">🗑️</button>
-    `;
-
-    li.querySelector(".removerItem").onclick = () => {
-        pesoAtual -= peso * quantidade;
-        atualizarPesoAtual();
-        li.remove();
-    };
-
-    document.getElementById("listaInventario").appendChild(li);
-
-    // limpa inputs
-    itemNome.value = "";
-    itemDesc.value = "";
-    itemPeso.value = "";
-    itemQtd.value = 1;
-}
-
-
 
 /* ================================= */
 /*     SUPABASE: SALVAR / CARREGAR   */
@@ -496,20 +431,12 @@ async function salvarFicha(){
         dano: Number(li.dataset.dano),
         municao: Number(li.dataset.municao)
     }));
-    
-    const inventario = [...document.querySelectorAll("#listaInventario li")].map(li => ({
-    nome: li.dataset.nome,
-    descricao: li.dataset.descricao,
-    peso: Number(li.dataset.peso),
-    quantidade: Number(li.dataset.quantidade)
-    }));
 
     const payload = {
     nome,
     habilidade: habilidades,
     arma: armas,
-    inventario,
-    peso_max: Number(document.getElementById("pesoMax").value),
+    inventario: document.getElementById("inventario").value.trim(),
     xp: Number(document.getElementById("xp").value),
 
     atributo: JSON.stringify(atributoValores),
@@ -520,6 +447,7 @@ async function salvarFicha(){
     dor: statusValores.dorAtual,
     dor_max: statusValores.dorMax
 };
+
 
     try {
         let query;
@@ -613,7 +541,6 @@ async function carregarFicha(id){
         alert("Erro ao carregar ficha: " + err.message);
         console.error(err);
     }
-
 }
 
 function preencherFormularioComFicha(f){
@@ -622,6 +549,7 @@ function preencherFormularioComFicha(f){
     // NOME / INVENTÁRIO / XP
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
+    document.getElementById("inventario").value = f.inventario ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
 
     // ===============================
@@ -663,43 +591,6 @@ function preencherFormularioComFicha(f){
     montarCampos();
     montarStatus();
     aplicarDano();
-    // ===============================
-    // INVENTÁRIO
-    // ===============================
-    limparInventario();
-
-    document.getElementById("pesoMax").value = f.peso_max ?? 10;
-
-    if (Array.isArray(f.inventario)) {
-        f.inventario.forEach(item => {
-            const pesoTotal = item.peso * item.quantidade;
-            pesoAtual += pesoTotal;
-
-            const li = document.createElement("li");
-            li.dataset.nome = item.nome;
-            li.dataset.descricao = item.descricao;
-            li.dataset.peso = item.peso;
-            li.dataset.quantidade = item.quantidade;
-
-            li.innerHTML = `
-                <strong>${item.nome}</strong> (${item.quantidade}x)
-                — Peso: ${pesoTotal}
-                <br><em>${item.descricao}</em>
-                <button class="removerItem">🗑️</button>
-            `;
-
-            li.querySelector(".removerItem").onclick = () => {
-                pesoAtual -= item.peso * item.quantidade;
-                atualizarPesoAtual();
-                li.remove();
-            };
-
-            document.getElementById("listaInventario").appendChild(li);
-        });
-    }
-
-    atualizarPesoAtual();
-
 }
 
 
@@ -859,14 +750,12 @@ async function listarFichas() {
 function novaFicha() { 
     fichaAtualId = null; // limpa referência
     document.getElementById("nomePersonagem").value = "";
+    document.getElementById("inventario").value = "";
     document.getElementById("xp").value = 0;
 
     // Limpar habilidades e armas
     limparHabilidades();
     limparArmas();
-    limparInventario();
-    document.getElementById("pesoMax").value = 10;
-
 
     // Resetar antecedentes e atributos
    Object.keys(antecedenteValores).forEach(k => {
