@@ -5,17 +5,16 @@
 const SUPA_URL = "https://oafqjrzbkgvntwlekmlq.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hZnFqcnpia2d2bnR3bGVrbWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNDQ0NzYsImV4cCI6MjA4MDkyMDQ3Nn0.OPw0x8cpTRgp4IoC42mpU9H1Ld9K2cXGjBAJffAVX3I";
 
-const supabase = window.supabase
+const supabaseClient = window.supabase
     ? window.supabase.createClient(SUPA_URL, SUPA_KEY)
     : null;
 
-if (!supabase) {
-    console.error("❌ Supabase client não encontrado.");
+if (!supabaseClient) {
+    console.error("❌ Supabase SDK não carregado.");
 } else {
     console.log("✅ Supabase conectado");
 }
-// 🔑 ID da ficha atualmente carregada (null = nova ficha)
-let fichaAtualId = null;
+
 
 
 /* ================================= */
@@ -31,10 +30,10 @@ async function gerarHash(texto) {
 /* ================================= */
 /*           TROCAR TELAS            */
 /* ================================= */
-function abrir(nome){
-    document.querySelectorAll(".tela").forEach(t => t.style.display="none");
+window.abrir = function(nome){
+    document.querySelectorAll(".tela").forEach(t => t.style.display = "none");
     document.getElementById(nome).style.display = "block";
-}
+};
 
 /* ================================= */
 /*        STATUS: VIDA / DOR         */
@@ -476,7 +475,7 @@ function addItem() {
 /*     SUPABASE: SALVAR / CARREGAR   */
 /* ================================= */
 async function salvarFicha(){
-    if(!supabase) return alert("Supabase não configurado.");
+    if(!supabaseClient) return alert("Supabase não configurado.");
 
     const nome = document.getElementById("nomePersonagem").value.trim();
     if(!nome) return alert("Digite o nome do personagem.");
@@ -530,7 +529,7 @@ async function salvarFicha(){
 
         // 🔁 SE JÁ EXISTE → UPDATE
         if(fichaAtualId){
-            query = supabase
+            query = supabaseClient
                 .from("fichas")
                 .update(payload)
                 .eq("id", fichaAtualId)
@@ -539,7 +538,7 @@ async function salvarFicha(){
         // 🆕 SE NÃO EXISTE → INSERT
         else{
             payload.senha_hash = senhaHash;
-            query = supabase
+            query = supabaseClient
                 .from("fichas")
                 .insert(payload)
                 .select();
@@ -559,13 +558,13 @@ async function salvarFicha(){
 
 
 async function excluirFicha(id){
-    if(!supabase) return;
+    if(!supabaseClient) return;
     const senha = prompt("Digite a senha para excluir esta ficha:");
     if(!senha) return alert("Senha obrigatória!");
     const senhaHash = await gerarHash(senha);
 
     try{
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from("fichas")
             .select("senha_hash")
             .eq("id", id)
@@ -574,7 +573,7 @@ async function excluirFicha(id){
 
         if(data.senha_hash !== senhaHash) return alert("❌ Senha incorreta!");
 
-        const { error: delErr } = await supabase
+        const { error: delErr } = await supabaseClient
             .from("fichas")
             .delete()
             .eq("id", id);
@@ -587,7 +586,7 @@ async function excluirFicha(id){
 }
 
 async function carregarFicha(id){
-    if(!supabase) return;
+    if(!supabaseClient) return;
 
     const senha = prompt("Digite a senha da ficha:");
     if(!senha) return alert("Senha obrigatória.");
@@ -595,7 +594,7 @@ async function carregarFicha(id){
     const senhaHash = await gerarHash(senha);
 
     try{
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from("fichas")
             .select("*")
             .eq("id", id)
@@ -822,13 +821,13 @@ function atualizarListaIniciativa() {
 /*     SUPABASE: LISTAR FICHAS       */
 /* ================================= */
 async function listarFichas() {
-    if(!supabase) return;
+    if(!supabaseClient) return;
 
     const lista = document.getElementById("listaFichas");
     lista.innerHTML = "Carregando...";
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from("fichas")
             .select("*")
             .order("created_at", { ascending:false });
@@ -912,6 +911,15 @@ function abrirFichas() {
 document.addEventListener("DOMContentLoaded", () => {
     listarFichas();   
 });
+/* ================================= */
+/*         EXPORTAR FUNÇÕES          */
+/* ================================= */
+window.salvarFicha   = salvarFicha;
+window.carregarFicha = carregarFicha;
+window.excluirFicha  = excluirFicha;
+window.novaFicha     = novaFicha;
+window.abrirFichas   = abrirFichas;
+window.abrir         = abrir;
 
 
 
