@@ -102,87 +102,34 @@
 </div>
 
    <div class="box">
-  <h2>Inventário Pessoal</h2>
+    <h2>Inventário</h2>
 
-  <div class="linha">
-    <label>
-      Peso Máximo
-      <input id="pesoMax" type="number" min="0" value="10">
-    </label>
+    <div class="linha">
+        <label>
+        Peso Máximo
+        <input id="pesoMax" type="number" min="0" value="10">
+        </label>
 
-    <label>
-      Peso Atual
-      <input id="pesoAtual" type="number" value="0" readonly>
-    </label>
-  </div>
-
-  <hr>
-
-  <input id="itemNome" placeholder="Nome do item">
-  <input id="itemDesc" placeholder="Descrição">
-  <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
-  <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
-
-  <div class="rowBtns">
-    <button onclick="addItemPessoal()">Adicionar ao Inventário</button>
-    <button onclick="limparInventarioPessoal()">Limpar</button>
-  </div>
-
-  <ul id="listaInventarioPessoal"></ul>
-
-  <hr>
-
-  <label>
-    <input type="checkbox" id="temCavalo" onchange="toggleCavalo()">
-    Possui Cavalo
-  </label>
-
-  <div id="areaCavalo" style="display:none; margin-top:10px;">
-    <h3>Inventário do Cavalo</h3>
-
-    <label>
-      <input type="radio" name="tipoCavalo" value="bolsa" onchange="definirTipoCavalo()">
-      Bolsa de montaria (10 espaços)
-    </label><br>
-
-    <label>
-      <input type="radio" name="tipoCavalo" value="carroca" onchange="definirTipoCavalo()">
-      Carroça (30 espaços)
-    </label><br>
-
-    <label>
-      <input type="radio" name="tipoCavalo" value="carro" onchange="definirTipoCavalo()">
-      Carro (20 espaços)
-    </label>
-
-    <div class="linha" style="margin-top:6px;">
-      Espaços: <span id="espacosAtual">0</span> /
-      <span id="espacosMax">0</span>
+        <label>
+        Peso Atual
+        <input id="pesoAtual" type="number" value="0" readonly>
+        </label>
     </div>
+
+    <hr>
+
+    <input id="itemNome" placeholder="Nome do item">
+    <input id="itemDesc" placeholder="Descrição">
+    <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
+    <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
 
     <div class="rowBtns">
-      <button onclick="addItemCavalo()">Adicionar ao Cavalo</button>
-      <button onclick="limparInventarioCavalo()">Limpar Cavalo</button>
+        <button onclick="addItem()">Adicionar Item</button>
+        <button onclick="limparInventario()">Limpar</button>
     </div>
 
-    <ul id="listaInventarioCavalo"></ul>
-  </div>
-</div>
-
-  <hr>
-
-  <input id="itemNome" placeholder="Nome do item">
-  <input id="itemDesc" placeholder="Descrição">
-  <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
-  <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
-
-  <div class="rowBtns">
-    <button onclick="addItem()">Adicionar Item</button>
-    <button onclick="limparInventario()">Limpar</button>
-  </div>
-
-  <ul id="listaInventario"></ul>
-</div>
+    <ul id="listaInventario"></ul>
+    </div>
 
 
     <div class="box">
