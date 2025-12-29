@@ -411,37 +411,37 @@ function limparArmas() {
 
 let montariaNivel = 1;
 
+// NÍVEL (igual atributo)
 function alterarNivelMontaria(valor) {
   montariaNivel += valor;
-
   if (montariaNivel < 1) montariaNivel = 1;
-
   document.getElementById("montariaNivel").textContent = montariaNivel;
-
-  // Regra opcional automática (igual personagem)
-  atualizarVidaMontaria();
 }
 
-// Garante que vida/dor atual não passe do máximo
-function atualizarVidaMontaria() {
-  const vidaAtual = document.getElementById("montariaVidaAtual");
-  const vidaMax = document.getElementById("montariaVidaMax");
+// VIDA
+document.getElementById("montariaVidaMax").onchange = () => {
+  const vidaMax = Number(montariaVidaMax.value);
+  montariaVidaAtual.value = vidaMax;
+};
 
-  if (Number(vidaAtual.value) > Number(vidaMax.value)) {
-    vidaAtual.value = vidaMax.value;
+// DOR
+document.getElementById("montariaDorMax").onchange = () => {
+  montariaDorAtual.value = 0;
+};
+
+// SEGURANÇA (nunca passa do máximo)
+document.getElementById("montariaVidaAtual").onchange = () => {
+  if (Number(montariaVidaAtual.value) > Number(montariaVidaMax.value)) {
+    montariaVidaAtual.value = montariaVidaMax.value;
   }
+};
 
-  const dorAtual = document.getElementById("montariaDorAtual");
-  const dorMax = document.getElementById("montariaDorMax");
-
-  if (Number(dorAtual.value) > Number(dorMax.value)) {
-    dorAtual.value = dorMax.value;
+document.getElementById("montariaDorAtual").onchange = () => {
+  if (Number(montariaDorAtual.value) > Number(montariaDorMax.value)) {
+    montariaDorAtual.value = montariaDorMax.value;
   }
-}
+};
 
-// Eventos automáticos (igual vida do personagem)
-document.getElementById("montariaVidaMax").onchange = atualizarVidaMontaria;
-document.getElementById("montariaDorMax").onchange = atualizarVidaMontaria;
 
 // ===============================
 // INVENTÁRIO
