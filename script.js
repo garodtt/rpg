@@ -410,6 +410,15 @@ function limparArmas() {
 /* ================================= */
 
 let pesoAtual = 0;
+let cavaloAtivo = false;
+let espacosAtual = 0;
+let espacosMax = 0;
+
+const limitesCavalo = {
+  bolsa: 10,
+  carroca: 30,
+  carro: 20
+};
 
 function atualizarPesoAtual() {
     document.getElementById("pesoAtual").value = pesoAtual;
@@ -417,9 +426,14 @@ function atualizarPesoAtual() {
 
 function limparInventario() {
     document.getElementById("listaInventario").innerHTML = "";
+
     pesoAtual = 0;
     atualizarPesoAtual();
+
+    espacosAtual = 0;
+    atualizarEspacos();
 }
+
 
 function addItem() {
     const nome = document.getElementById("itemNome").value.trim();
@@ -428,35 +442,56 @@ function addItem() {
     const quantidade = Number(document.getElementById("itemQtd").value);
     const pesoMax = Number(document.getElementById("pesoMax").value);
 
-    if (!nome || isNaN(peso) || isNaN(quantidade) || quantidade <= 0) return;
+    if (!nome || quantidade <= 0) return;
 
-    const pesoTotal = peso * quantidade;
+    // =========================
+    // 🐎 INVENTÁRIO DO CAVALO
+    // =========================
+    if (cavaloAtivo) {
+        if (espacosAtual + quantidade > espacosMax) {
+            alert("🐎 Espaço do cavalo excedido!");
+            return;
+        }
 
-    // 🚫 BLOQUEIO DE PESO
-    if (pesoAtual + pesoTotal > pesoMax) {
-        alert("🚫 Peso máximo excedido!");
-        return;
+        espacosAtual += quantidade;
+        atualizarEspacos();
+    }
+    // =========================
+    // 🎒 INVENTÁRIO NORMAL
+    // =========================
+    else {
+        if (isNaN(peso)) return;
+
+        const pesoTotal = peso * quantidade;
+
+        if (pesoAtual + pesoTotal > pesoMax) {
+            alert("🚫 Peso máximo excedido!");
+            return;
+        }
+
+        pesoAtual += pesoTotal;
+        atualizarPesoAtual();
     }
 
-    pesoAtual += pesoTotal;
-    atualizarPesoAtual();
-
     const li = document.createElement("li");
-    li.dataset.nome = nome;
-    li.dataset.descricao = descricao;
-    li.dataset.peso = peso;
     li.dataset.quantidade = quantidade;
+    li.dataset.peso = peso;
 
     li.innerHTML = `
         <strong>${nome}</strong> (${quantidade}x)
-        — Peso: ${pesoTotal}
+        ${cavaloAtivo ? "" : `— Peso: ${peso * quantidade}`}
         <br><em>${descricao}</em>
         <button class="removerItem">🗑️</button>
     `;
 
     li.querySelector(".removerItem").onclick = () => {
-        pesoAtual -= peso * quantidade;
-        atualizarPesoAtual();
+        if (cavaloAtivo) {
+            espacosAtual -= quantidade;
+            atualizarEspacos();
+        } else {
+            pesoAtual -= peso * quantidade;
+            atualizarPesoAtual();
+        }
         li.remove();
     };
 
@@ -467,6 +502,32 @@ function addItem() {
     itemDesc.value = "";
     itemPeso.value = "";
     itemQtd.value = 1;
+}
+
+function toggleCavalo() {
+  cavaloAtivo = document.getElementById("temCavalo").checked;
+  document.getElementById("opcoesCavalo").style.display = cavaloAtivo ? "block" : "none";
+
+  // reset se desmarcar
+  if (!cavaloAtivo) {
+    espacosAtual = 0;
+    espacosMax = 0;
+    atualizarEspacos();
+  }
+}
+
+function definirEspacosCavalo() {
+  const tipo = document.querySelector('input[name="tipoCavalo"]:checked')?.value;
+  if (!tipo) return;
+
+  espacosMax = limitesCavalo[tipo];
+  espacosAtual = 0;
+  atualizarEspacos();
+}
+
+function atualizarEspacos() {
+  document.getElementById("espacosAtual").textContent = espacosAtual;
+  document.getElementById("espacosMax").textContent = espacosMax;
 }
 
 
@@ -920,7 +981,6 @@ window.excluirFicha  = excluirFicha;
 window.novaFicha     = novaFicha;
 window.abrirFichas   = abrirFichas;
 window.abrir         = abrir;
-
 
 
 
