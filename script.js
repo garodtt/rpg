@@ -405,14 +405,22 @@ function limparArmas() {
     document.getElementById("listaArmas").innerHTML = "";
 }
 
+
 /* ================================= */
 /*            INVENTÁRIO             */
 /* ================================= */
 
-let pesoAtual = 0;
-let cavaloAtivo = false;
-let espacosAtual = 0;
-let espacosMax = 0;
+const inventario = {
+  pessoal: {
+    pesoAtual: 0
+  },
+  cavalo: {
+    ativo: false,
+    tipo: null,
+    espacosAtual: 0,
+    espacosMax: 0
+  }
+};
 
 const limitesCavalo = {
   bolsa: 10,
@@ -420,114 +428,124 @@ const limitesCavalo = {
   carro: 20
 };
 
+/* ---------- INVENTÁRIO PESSOAL ---------- */
+
 function atualizarPesoAtual() {
-    document.getElementById("pesoAtual").value = pesoAtual;
+  const el = document.getElementById("pesoAtual");
+  if (el) el.value = inventario.pessoal.pesoAtual;
 }
 
-function limparInventario() {
-    document.getElementById("listaInventario").innerHTML = "";
+function limparInventarioPessoal() {
+  document.getElementById("listaInventarioPessoal").innerHTML = "";
+  inventario.pessoal.pesoAtual = 0;
+  atualizarPesoAtual();
+}
 
-    pesoAtual = 0;
+function addItemPessoal() {
+  const nome = itemNome.value.trim();
+  const descricao = itemDesc.value.trim();
+  const peso = Number(itemPeso.value);
+  const qtd = Number(itemQtd.value);
+  const pesoMax = Number(pesoMax.value);
+
+  if (!nome || isNaN(peso) || qtd <= 0) return;
+
+  const pesoTotal = peso * qtd;
+
+  if (inventario.pessoal.pesoAtual + pesoTotal > pesoMax) {
+    alert("🚫 Peso máximo excedido!");
+    return;
+  }
+
+  inventario.pessoal.pesoAtual += pesoTotal;
+  atualizarPesoAtual();
+
+  const li = document.createElement("li");
+  li.dataset.pesoTotal = pesoTotal;
+
+  li.innerHTML = `
+    <strong>${nome}</strong> (${qtd}x) — Peso: ${pesoTotal}
+    <br><em>${descricao}</em>
+    <button>🗑️</button>
+  `;
+
+  li.querySelector("button").onclick = () => {
+    inventario.pessoal.pesoAtual -= pesoTotal;
     atualizarPesoAtual();
+    li.remove();
+  };
 
-    espacosAtual = 0;
-    atualizarEspacos();
+  listaInventarioPessoal.appendChild(li);
+
+  itemNome.value = itemDesc.value = itemPeso.value = "";
+  itemQtd.value = 1;
 }
 
-
-function addItem() {
-    const nome = document.getElementById("itemNome").value.trim();
-    const descricao = document.getElementById("itemDesc").value.trim();
-    const peso = Number(document.getElementById("itemPeso").value);
-    const quantidade = Number(document.getElementById("itemQtd").value);
-    const pesoMax = Number(document.getElementById("pesoMax").value);
-
-    if (!nome || quantidade <= 0) return;
-
-    // =========================
-    // 🐎 INVENTÁRIO DO CAVALO
-    // =========================
-    if (cavaloAtivo) {
-        if (espacosAtual + quantidade > espacosMax) {
-            alert("🐎 Espaço do cavalo excedido!");
-            return;
-        }
-
-        espacosAtual += quantidade;
-        atualizarEspacos();
-    }
-    // =========================
-    // 🎒 INVENTÁRIO NORMAL
-    // =========================
-    else {
-        if (isNaN(peso)) return;
-
-        const pesoTotal = peso * quantidade;
-
-        if (pesoAtual + pesoTotal > pesoMax) {
-            alert("🚫 Peso máximo excedido!");
-            return;
-        }
-
-        pesoAtual += pesoTotal;
-        atualizarPesoAtual();
-    }
-
-    const li = document.createElement("li");
-    li.dataset.quantidade = quantidade;
-    li.dataset.peso = peso;
-
-    li.innerHTML = `
-        <strong>${nome}</strong> (${quantidade}x)
-        ${cavaloAtivo ? "" : `— Peso: ${peso * quantidade}`}
-        <br><em>${descricao}</em>
-        <button class="removerItem">🗑️</button>
-    `;
-
-    li.querySelector(".removerItem").onclick = () => {
-        if (cavaloAtivo) {
-            espacosAtual -= quantidade;
-            atualizarEspacos();
-        } else {
-            pesoAtual -= peso * quantidade;
-            atualizarPesoAtual();
-        }
-        li.remove();
-    };
-
-    document.getElementById("listaInventario").appendChild(li);
-
-    // limpa inputs
-    itemNome.value = "";
-    itemDesc.value = "";
-    itemPeso.value = "";
-    itemQtd.value = 1;
-}
+/* ---------- INVENTÁRIO DO CAVALO ---------- */
 
 function toggleCavalo() {
-  cavaloAtivo = document.getElementById("temCavalo").checked;
-  document.getElementById("opcoesCavalo").style.display = cavaloAtivo ? "block" : "none";
+  inventario.cavalo.ativo = temCavalo.checked;
+  areaCavalo.style.display = inventario.cavalo.ativo ? "block" : "none";
 
-  // reset se desmarcar
-  if (!cavaloAtivo) {
-    espacosAtual = 0;
-    espacosMax = 0;
-    atualizarEspacos();
+  if (!inventario.cavalo.ativo) {
+    limparInventarioCavalo();
   }
 }
 
-function definirEspacosCavalo() {
+function definirTipoCavalo() {
   const tipo = document.querySelector('input[name="tipoCavalo"]:checked')?.value;
   if (!tipo) return;
 
-  espacosMax = limitesCavalo[tipo];
-  espacosAtual = 0;
+  inventario.cavalo.tipo = tipo;
+  inventario.cavalo.espacosMax = limitesCavalo[tipo];
+  inventario.cavalo.espacosAtual = 0;
+
   atualizarEspacos();
+  listaInventarioCavalo.innerHTML = "";
 }
 
 function atualizarEspacos() {
-  document.getElementById("espacosAtual").textContent = espacosAtual;
-  document.getElementById("espacosMax").textContent = espacosMax;
+  espacosAtual.textContent = inventario.cavalo.espacosAtual;
+  espacosMax.textContent = inventario.cavalo.espacosMax;
+}
+
+function limparInventarioCavalo() {
+  listaInventarioCavalo.innerHTML = "";
+  inventario.cavalo.espacosAtual = 0;
+  atualizarEspacos();
+}
+
+function addItemCavalo() {
+  const nome = itemNome.value.trim();
+  const descricao = itemDesc.value.trim();
+  const qtd = Number(itemQtd.value);
+
+  if (!nome || qtd <= 0) return;
+
+  if (inventario.cavalo.espacosAtual + qtd > inventario.cavalo.espacosMax) {
+    alert("🐎 Espaço do cavalo excedido!");
+    return;
+  }
+
+  inventario.cavalo.espacosAtual += qtd;
+  atualizarEspacos();
+
+  const li = document.createElement("li");
+  li.dataset.qtd = qtd;
+
+  li.innerHTML = `
+    <strong>${nome}</strong> (${qtd}x)
+    <br><em>${descricao}</em>
+    <button>🗑️</button>
+  `;
+
+  li.querySelector("button").onclick = () => {
+    inventario.cavalo.espacosAtual -= qtd;
+    atualizarEspacos();
+    li.remove();
+  };
+
+  listaInventarioCavalo.appendChild(li);
 }
 
 
