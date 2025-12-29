@@ -406,6 +406,44 @@ function limparArmas() {
 }
 
 // ===============================
+// MONTARIA
+// ===============================
+
+let montariaNivel = 1;
+
+function alterarNivelMontaria(valor) {
+  montariaNivel += valor;
+
+  if (montariaNivel < 1) montariaNivel = 1;
+
+  document.getElementById("montariaNivel").textContent = montariaNivel;
+
+  // Regra opcional automática (igual personagem)
+  atualizarVidaMontaria();
+}
+
+// Garante que vida/dor atual não passe do máximo
+function atualizarVidaMontaria() {
+  const vidaAtual = document.getElementById("montariaVidaAtual");
+  const vidaMax = document.getElementById("montariaVidaMax");
+
+  if (Number(vidaAtual.value) > Number(vidaMax.value)) {
+    vidaAtual.value = vidaMax.value;
+  }
+
+  const dorAtual = document.getElementById("montariaDorAtual");
+  const dorMax = document.getElementById("montariaDorMax");
+
+  if (Number(dorAtual.value) > Number(dorMax.value)) {
+    dorAtual.value = dorMax.value;
+  }
+}
+
+// Eventos automáticos (igual vida do personagem)
+document.getElementById("montariaVidaMax").onchange = atualizarVidaMontaria;
+document.getElementById("montariaDorMax").onchange = atualizarVidaMontaria;
+
+// ===============================
 // INVENTÁRIO
 // ===============================
 
@@ -1009,7 +1047,6 @@ window.excluirFicha  = excluirFicha;
 window.novaFicha     = novaFicha;
 window.abrirFichas   = abrirFichas;
 window.abrir         = abrir;
-
 
 
 
