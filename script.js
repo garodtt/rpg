@@ -409,55 +409,81 @@ function limparArmas() {
 // INVENTÁRIO
 // ===============================
 
+// ---- PLAYER ----
 let pesoAtual = 0;
 
 // ---- CAVALO ----
 let cavaloAtivo = false;
-let cavaloMax = 0;
-let cavaloUsado = 0;
+let pesoCavaloAtual = 0;
+let pesoCavaloMax = 0;
+let tipoCavaloAnterior = "";
 let flagEnviarCavalo = false;
 
 // UI
 const statusCavalo = document.getElementById("statusCavalo");
 const boxCavalo = document.getElementById("boxCavalo");
+const selectTipoCavalo = document.getElementById("tipoCavalo");
 
+// Toggle status cavalo
 document.getElementById("btnCavaloStatus").onclick = () => {
   statusCavalo.style.display =
     statusCavalo.style.display === "none" ? "block" : "none";
 };
 
+// Flag envio cavalo
 document.getElementById("flagCavalo").onclick = () => {
   flagEnviarCavalo = !flagEnviarCavalo;
   document.getElementById("flagCavalo").style.opacity =
     flagEnviarCavalo ? "1" : "0.4";
 };
 
-// ATIVA MONTARIA
-function ativarCavalo(max) {
+// TROCA TIPO CAVALO
+selectTipoCavalo.onchange = () => {
+  const novoMax = Number(selectTipoCavalo.value);
+
+  if (!novoMax) {
+    cavaloAtivo = false;
+    pesoCavaloMax = 0;
+    atualizarPesoCavalo();
+    boxCavalo.style.display = "none";
+    tipoCavaloAnterior = "";
+    return;
+  }
+
+  // valida peso atual
+  if (pesoCavaloAtual > novoMax) {
+    alert("🐎 O peso atual do cavalo excede este tipo de montaria!");
+    selectTipoCavalo.value = tipoCavaloAnterior;
+    return;
+  }
+
   cavaloAtivo = true;
-  cavaloMax = max;
-  cavaloUsado = 0;
+  pesoCavaloMax = novoMax;
+  tipoCavaloAnterior = selectTipoCavalo.value;
 
-  document.getElementById("cavaloMax").textContent = cavaloMax;
-  document.getElementById("cavaloUsado").textContent = cavaloUsado;
-
+  atualizarPesoCavalo();
   boxCavalo.style.display = "block";
-}
+};
 
-// PLAYER
 function atualizarPesoAtual() {
   document.getElementById("pesoAtual").value = pesoAtual;
 }
 
+function atualizarPesoCavalo() {
+  document.getElementById("pesoCavaloAtual").textContent = pesoCavaloAtual;
+  document.getElementById("pesoCavaloMax").textContent = pesoCavaloMax;
+}
+
+// LIMPAR
 function limparInventario() {
   document.getElementById("listaInventario").innerHTML = "";
   document.getElementById("listaInventarioCavalo").innerHTML = "";
 
   pesoAtual = 0;
-  cavaloUsado = 0;
+  pesoCavaloAtual = 0;
 
   atualizarPesoAtual();
-  document.getElementById("cavaloUsado").textContent = cavaloUsado;
+  atualizarPesoCavalo();
 }
 
 // ADD ITEM
@@ -466,7 +492,7 @@ function addItem() {
   const descricao = itemDesc.value.trim();
   const peso = Number(itemPeso.value);
   const qtd = Number(itemQtd.value);
-  const pesoMax = Number(document.getElementById("pesoMax").value);
+  const pesoMaxPlayer = Number(document.getElementById("pesoMax").value);
 
   if (!nome || peso < 0 || qtd <= 0) return;
 
@@ -474,24 +500,25 @@ function addItem() {
 
   // ---- CAVALO ----
   if (flagEnviarCavalo && cavaloAtivo) {
-    if (cavaloUsado + qtd > cavaloMax) {
-      alert("🐎 Espaços do cavalo esgotados!");
+    if (pesoCavaloAtual + pesoTotal > pesoCavaloMax) {
+      alert("🐎 Peso máximo do cavalo excedido!");
       return;
     }
 
-    cavaloUsado += qtd;
-    document.getElementById("cavaloUsado").textContent = cavaloUsado;
+    pesoCavaloAtual += pesoTotal;
+    atualizarPesoCavalo();
 
     const li = document.createElement("li");
     li.innerHTML = `
       <strong>${nome}</strong> (${qtd}x)
+      — Peso: ${pesoTotal}
       <br><em>${descricao}</em>
       <button>🗑️</button>
     `;
 
     li.querySelector("button").onclick = () => {
-      cavaloUsado -= qtd;
-      document.getElementById("cavaloUsado").textContent = cavaloUsado;
+      pesoCavaloAtual -= pesoTotal;
+      atualizarPesoCavalo();
       li.remove();
     };
 
@@ -500,8 +527,8 @@ function addItem() {
 
   // ---- PLAYER ----
   else {
-    if (pesoAtual + pesoTotal > pesoMax) {
-      alert("🚫 Peso máximo excedido!");
+    if (pesoAtual + pesoTotal > pesoMaxPlayer) {
+      alert("🚫 Peso máximo do personagem excedido!");
       return;
     }
 
@@ -531,8 +558,6 @@ function addItem() {
   itemPeso.value = "";
   itemQtd.value = 1;
 }
-
-
 
 
 /* ================================= */
