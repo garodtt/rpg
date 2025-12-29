@@ -128,6 +128,35 @@
   </div>
 
   <ul id="listaInventario"></ul>
+
+  <label>
+  <input type="checkbox" id="temCavalo" onchange="toggleCavalo()">
+  Possui Cavalo
+</label>
+
+<div id="opcoesCavalo" style="display:none; margin-top:10px;">
+  <strong>Inventário do Cavalo</strong>
+
+  <label>
+    <input type="radio" name="tipoCavalo" value="bolsa" onchange="definirEspacosCavalo()">
+    Bolsa de montaria (10)
+  </label><br>
+
+  <label>
+    <input type="radio" name="tipoCavalo" value="carroca" onchange="definirEspacosCavalo()">
+    Carroça (30)
+  </label><br>
+
+  <label>
+    <input type="radio" name="tipoCavalo" value="carro" onchange="definirEspacosCavalo()">
+    Carro (20)
+  </label>
+
+  <div class="linha" style="margin-top:8px;">
+    Espaços: <span id="espacosAtual">0</span> /
+    <span id="espacosMax">0</span>
+  </div>
+  
 </div>
 
 
