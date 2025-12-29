@@ -122,20 +122,26 @@
 
   <!-- STATUS CAVALO -->
   <div id="statusCavalo" style="display:none; margin-top:10px;">
-    <strong>Montaria</strong>
-    <ul>
-      <li><button onclick="ativarCavalo(10)">Bolsa de montaria (10)</button></li>
-      <li><button onclick="ativarCavalo(20)">Carro (20)</button></li>
-      <li><button onclick="ativarCavalo(30)">Carroça (30)</button></li>
-    </ul>
+  <strong>Montaria</strong>
 
-    <div>
-      Espaços:
-      <span id="cavaloUsado">0</span> /
-      <span id="cavaloMax">0</span>
-    </div>
+  <div class="linha">
+    <label>
+      Tipo
+      <select id="tipoCavalo">
+        <option value="">Nenhum</option>
+        <option value="10">Bolsa de montaria (10)</option>
+        <option value="20">Carro (20)</option>
+        <option value="30">Carroça (30)</option>
+      </select>
+    </label>
   </div>
 
+  <div>
+    Peso Cavalo:
+    <span id="pesoCavaloAtual">0</span> /
+    <span id="pesoCavaloMax">0</span>
+  </div>
+</div>
   <hr>
 
   <!-- ADD ITEM -->
