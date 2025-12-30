@@ -707,12 +707,14 @@ async function salvarFicha(){
         desc: li.dataset.desc
     }));
 
-    const armas = [...document.querySelectorAll("#listaArmas li")].map(li => ({
+   const armas = [...document.querySelectorAll("#listaArmas li")].map(li => ({
         nome: li.dataset.nome,
         dano: Number(li.dataset.dano),
-        municao: Number(li.dataset.municao)
+        tipo: li.dataset.tipoDano,
+        municaoAtual: Number(li.dataset.municaoAtual),
+        municaoMax: Number(li.dataset.municaoMax)
     }));
-    
+
     const inventario = [...document.querySelectorAll("#listaInventario li")].map(li => ({
     nome: li.dataset.nome,
     descricao: li.dataset.descricao,
@@ -858,60 +860,52 @@ async function carregarFicha(id){
 function preencherFormularioComFicha(f){
 
     // ===============================
-    // NOME / INVENTÁRIO / XP
+    // BÁSICO
     // ===============================
     document.getElementById("nomePersonagem").value = f.nome ?? "";
     document.getElementById("xp").value = f.xp ?? 0;
     document.getElementById("dinheiro").value = f.dinheiro ?? 0;
 
-
     // ===============================
-    // ANTECEDENTES (JSON → OBJETO)
+    // ANTECEDENTES
     // ===============================
-    const antecedentesDB = typeof f.antecedente === "string"
+    const ant = typeof f.antecedente === "string"
         ? JSON.parse(f.antecedente)
         : f.antecedente || {};
 
-    antecedentes.forEach(nome => {
-        antecedenteValores[nome] = antecedentesDB[nome] ?? 0;
-    });
+    antecedentes.forEach(n => antecedenteValores[n] = ant[n] ?? 0);
 
     // ===============================
-    // ATRIBUTOS (JSON → OBJETO)
+    // ATRIBUTOS
     // ===============================
-    const atributosDB = typeof f.atributo === "string"
+    const atr = typeof f.atributo === "string"
         ? JSON.parse(f.atributo)
         : f.atributo || {};
 
-    atributos.forEach(nome => {
-        atributoValores[nome] = atributosDB[nome] ?? 0;
-    });
+    atributos.forEach(n => atributoValores[n] = atr[n] ?? 0);
 
     // ===============================
     // STATUS
     // ===============================
-    statusValores.vidaMax   = f.vida_max;
-    statusValores.dorMax    = f.dor_max;
-    statusValores.vidaAtual = f.vida;
-    statusValores.dorAtual  = f.dor;
+    statusValores.vidaMax   = f.vida_max ?? 10;
+    statusValores.dorMax    = f.dor_max ?? 10;
+    statusValores.vidaAtual = f.vida ?? statusValores.vidaMax;
+    statusValores.dorAtual  = f.dor ?? statusValores.dorMax;
 
-    document.getElementById("vidaMaxInput").value = f.vida_max;
-    document.getElementById("dorMaxInput").value  = f.dor_max;
+    document.getElementById("vidaMaxInput").value = statusValores.vidaMax;
+    document.getElementById("dorMaxInput").value  = statusValores.dorMax;
 
-    // ===============================
-    // MONTA A UI COM VALORES CERTOS
-    // ===============================
     montarCampos();
     montarStatus();
     aplicarDano();
+
     // ===============================
     // INVENTÁRIO
     // ===============================
     limparInventario();
-
     document.getElementById("pesoMax").value = f.peso_max ?? 10;
 
-    if (Array.isArray(f.inventario)) {
+    if(Array.isArray(f.inventario)){
         f.inventario.forEach(item => {
             const pesoTotal = item.peso * item.quantidade;
             pesoAtual += pesoTotal;
@@ -923,14 +917,14 @@ function preencherFormularioComFicha(f){
             li.dataset.quantidade = item.quantidade;
 
             li.innerHTML = `
-                <strong>${item.nome}</strong> (${item.quantidade}x)
-                — Peso: ${pesoTotal}
-                <br><em>${item.descricao}</em>
-                <button class="removerItem">🗑️</button>
+              <strong>${item.nome}</strong> (${item.quantidade}x)
+              — Peso: ${pesoTotal}
+              <br><em>${item.descricao}</em>
+              <button>🗑️</button>
             `;
 
-            li.querySelector(".removerItem").onclick = () => {
-                pesoAtual -= item.peso * item.quantidade;
+            li.querySelector("button").onclick = () => {
+                pesoAtual -= pesoTotal;
                 atualizarPesoAtual();
                 li.remove();
             };
@@ -941,22 +935,70 @@ function preencherFormularioComFicha(f){
 
     atualizarPesoAtual();
 
+    // ===============================
+    // ARMAS
+    // ===============================
+    limparArmas();
+
+    if(Array.isArray(f.arma)){
+        f.arma.forEach(a => {
+            const li = document.createElement("li");
+
+            li.dataset.nome = a.nome;
+            li.dataset.dano = a.dano;
+            li.dataset.tipoDano = a.tipo;
+            li.dataset.municaoAtual = a.municaoAtual;
+            li.dataset.municaoMax = a.municaoMax;
+
+            li.innerHTML = `
+              <strong>${a.nome}</strong>
+              — Dano: ${a.dano} (${a.tipo})
+              — Munição: <span class="municao">${a.municaoAtual}</span>
+              <button class="menosMunicao">-1</button>
+              <button class="maisMunicao">+1</button>
+              <button class="recarregar" style="display:none">Recarregar</button>
+              <button class="removerArma">🗑️</button>
+            `;
+
+            aplicarEventosArma(li);
+            document.getElementById("listaArmas").appendChild(li);
+        });
+    }
+
+    // ===============================
+    // HABILIDADES
+    // ===============================
+    limparHabilidades();
+    if(Array.isArray(f.habilidade)){
+        f.habilidade.forEach(h => {
+            const li = document.createElement("li");
+            li.dataset.nome = h.nome;
+            li.dataset.desc = h.desc;
+            li.innerHTML = `
+              <strong>${h.nome}</strong> — ${h.desc}
+              <button class="removerHabilidade">🗑️</button>
+            `;
+            li.querySelector("button").onclick = () => li.remove();
+            document.getElementById("listaHabilidades").appendChild(li);
+        });
+    }
+
+    // ===============================
+    // MONTARIA
+    // ===============================
+    document.getElementById("montariaNome").value = f.montaria_nome ?? "";
+
+    montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
+    montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
+    montariaStatus.vidaAtual = f.montaria_vida ?? montariaStatus.vidaMax;
+    montariaStatus.dorAtual  = f.montaria_dor ?? montariaStatus.dorMax;
+
+    document.getElementById("montariaVidaMaxInput").value = montariaStatus.vidaMax;
+    document.getElementById("montariaDorMaxInput").value  = montariaStatus.dorMax;
+
+    montarStatusMontaria();
 }
 
-// ===============================
-// MONTARIA
-// ===============================
-document.getElementById("montariaNome").value = f.montaria_nome ?? "";
-
-montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
-montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
-montariaStatus.vidaAtual = f.montaria_vida ?? montariaStatus.vidaMax;
-montariaStatus.dorAtual  = f.montaria_dor ?? montariaStatus.dorMax;
-
-document.getElementById("montariaVidaMaxInput").value = montariaStatus.vidaMax;
-document.getElementById("montariaDorMaxInput").value  = montariaStatus.dorMax;
-
-montarStatusMontaria();
 
 
 
