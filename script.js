@@ -15,6 +15,11 @@ if (!supabaseClient) {
     console.log("✅ Supabase conectado");
 }
 
+/* ================================= */
+/*        CONTROLE DE FICHA ATUAL    */
+/* ================================= */
+
+let fichaAtualId = null;
 
 
 /* ================================= */
@@ -406,59 +411,97 @@ function limparArmas() {
 }
 
 /* ================================= */
-/*            MONTARIA               */
+/*        STATUS: MONTARIA           */
 /* ================================= */
 
 const montariaStatus = {
-  nivel: 1,
   vidaAtual: 10,
   vidaMax: 10,
-  dorAtual: 0,
+  dorAtual: 10,
   dorMax: 10
 };
 
 function montarStatusMontaria() {
-  document.getElementById("montariaNivel").textContent = montariaStatus.nivel;
-  document.getElementById("montariaVidaAtual").value = montariaStatus.vidaAtual;
-  document.getElementById("montariaVidaMax").value   = montariaStatus.vidaMax;
-  document.getElementById("montariaDorAtual").value  = montariaStatus.dorAtual;
-  document.getElementById("montariaDorMax").value    = montariaStatus.dorMax;
+  const area = document.getElementById("areaStatusMontaria");
+
+  area.innerHTML = `
+    <div class="linha">
+      ❤️ Vida: <span id="montVidaAtual">${montariaStatus.vidaAtual}</span>
+      <button id="menosVidaMont">-1</button>
+      <button id="maisVidaMont">+1</button>
+    </div>
+
+    <div class="linha">
+      💢 Dor: <span id="montDorAtual">${montariaStatus.dorAtual}</span>
+      <button id="menosDorMont">-1</button>
+      <button id="maisDorMont">+1</button>
+    </div>
+  `;
+
+  document.getElementById("menosVidaMont").onclick = () => {
+    montariaStatus.vidaAtual = Math.max(0, montariaStatus.vidaAtual - 1);
+    aplicarDanoMontaria();
+    atualizarStatusMontaria();
+  };
+
+  document.getElementById("maisVidaMont").onclick = () => {
+    montariaStatus.vidaAtual++;
+    aplicarDanoMontaria();
+    atualizarStatusMontaria();
+  };
+
+  document.getElementById("menosDorMont").onclick = () => {
+    montariaStatus.dorAtual = Math.max(0, montariaStatus.dorAtual - 1);
+    aplicarDanoMontaria();
+    atualizarStatusMontaria();
+  };
+
+  document.getElementById("maisDorMont").onclick = () => {
+    montariaStatus.dorAtual++;
+    aplicarDanoMontaria();
+    atualizarStatusMontaria();
+  };
 }
 
-// NÍVEL (igual atributo)
-function alterarNivelMontaria(delta) {
-  montariaStatus.nivel = Math.max(1, montariaStatus.nivel + delta);
-  montarStatusMontaria();
+function aplicarDanoMontaria() {
+  let { vidaAtual, vidaMax, dorAtual, dorMax } = montariaStatus;
+
+  if (vidaAtual > vidaMax) vidaAtual = vidaMax;
+  if (dorAtual > dorMax) dorAtual = dorMax;
+
+  if (dorAtual <= 0 && dorMax > 0) {
+    dorAtual = dorMax;
+    vidaAtual--;
+  }
+
+  if (vidaAtual < 0) vidaAtual = 0;
+
+  montariaStatus.vidaAtual = vidaAtual;
+  montariaStatus.dorAtual = dorAtual;
 }
 
-// VIDA MAX → reseta vida atual
-document.getElementById("montariaVidaMax").onchange = () => {
-  montariaStatus.vidaMax   = Number(montariaVidaMax.value);
+function atualizarStatusMontaria() {
+  document.getElementById("montVidaAtual").textContent = montariaStatus.vidaAtual;
+  document.getElementById("montDorAtual").textContent  = montariaStatus.dorAtual;
+}
+
+/* ================================= */
+/*     RESET POR VIDA/DOR MAX        */
+/* ================================= */
+
+document.getElementById("montariaVidaMaxInput").onchange = () => {
+  montariaStatus.vidaMax = Number(montariaVidaMaxInput.value);
   montariaStatus.vidaAtual = montariaStatus.vidaMax;
   montarStatusMontaria();
 };
 
-// DOR MAX → reseta dor atual
-document.getElementById("montariaDorMax").onchange = () => {
-  montariaStatus.dorMax   = Number(montariaDorMax.value);
+document.getElementById("montariaDorMaxInput").onchange = () => {
+  montariaStatus.dorMax = Number(montariaDorMaxInput.value);
   montariaStatus.dorAtual = montariaStatus.dorMax;
   montarStatusMontaria();
 };
 
-// NORMALIZAÇÃO (igual personagem)
-document.getElementById("montariaVidaAtual").onchange = () => {
-  if (montariaStatus.vidaAtual > montariaStatus.vidaMax) {
-    montariaStatus.vidaAtual = montariaStatus.vidaMax;
-  }
-};
-
-document.getElementById("montariaDorAtual").onchange = () => {
-  if (montariaStatus.dorAtual > montariaStatus.dorMax) {
-    montariaStatus.dorAtual = montariaStatus.dorMax;
-  }
-};
-
-// Inicialização
+// INIT
 montarStatusMontaria();
 
 
@@ -882,6 +925,22 @@ function preencherFormularioComFicha(f){
     atualizarPesoAtual();
 
 }
+
+// ===============================
+// MONTARIA
+// ===============================
+document.getElementById("montariaNome").value = f.montaria_nome ?? "";
+
+montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
+montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
+montariaStatus.vidaAtual = f.montaria_vida ?? montariaStatus.vidaMax;
+montariaStatus.dorAtual  = f.montaria_dor ?? montariaStatus.dorMax;
+
+document.getElementById("montariaVidaMaxInput").value = montariaStatus.vidaMax;
+document.getElementById("montariaDorMaxInput").value  = montariaStatus.dorMax;
+
+montarStatusMontaria();
+
 
 
 /* ================================= */
