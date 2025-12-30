@@ -853,7 +853,7 @@ async function salvarFicha(){
     dor: statusValores.dorAtual,
     dor_max: statusValores.dorMax,
 
-    tipo_cavalo: selectTipoCavalo.value || "",
+    tipo_cavalo: cavaloAtivo ? selectTipoCavalo.value : "",
     montaria_nome: document.getElementById("montariaNome").value || "",
     montaria_vida: montariaStatus.vidaAtual,
     montaria_vida_max: montariaStatus.vidaMax,
@@ -1320,6 +1320,5 @@ window.excluirFicha  = excluirFicha;
 window.novaFicha     = novaFicha;
 window.abrirFichas   = abrirFichas;
 window.abrir         = abrir;
-
 
 
