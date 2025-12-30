@@ -619,7 +619,15 @@ function addItem() {
     pesoCavaloAtual += pesoTotal;
     atualizarPesoCavalo();
 
-    const li = document.createElement("li");
+   const li = document.createElement("li");
+
+    // 🔐 DADOS PARA SALVAR
+    li.dataset.nome = nome;
+    li.dataset.descricao = descricao;
+    li.dataset.peso = peso;
+    li.dataset.quantidade = qtd;
+    li.dataset.cavalo = "true"; // opcional (futuro)
+
     li.innerHTML = `
       <strong>${nome}</strong> (${qtd}x)
       — Peso: ${pesoTotal}
@@ -646,7 +654,14 @@ function addItem() {
     pesoAtual += pesoTotal;
     atualizarPesoAtual();
 
-    const li = document.createElement("li");
+   const li = document.createElement("li");
+
+    // 🔐 DADOS PARA SALVAR
+    li.dataset.nome = nome;
+    li.dataset.descricao = descricao;
+    li.dataset.peso = peso;
+    li.dataset.quantidade = qtd;
+
     li.innerHTML = `
       <strong>${nome}</strong> (${qtd}x)
       — Peso: ${pesoTotal}
@@ -696,11 +711,15 @@ async function salvarFicha(){
         municao: Number(li.dataset.municao)
     }));
     
-    const inventario = [...document.querySelectorAll("#listaInventario li")].map(li => ({
-    nome: li.dataset.nome,
-    descricao: li.dataset.descricao,
-    peso: Number(li.dataset.peso),
-    quantidade: Number(li.dataset.quantidade)
+    const inventario = [
+    ...document.querySelectorAll("#listaInventario li"),
+    ...document.querySelectorAll("#listaInventarioCavalo li")
+    ].map(li => ({
+      nome: li.dataset.nome,
+      descricao: li.dataset.descricao,
+      peso: Number(li.dataset.peso),
+      quantidade: Number(li.dataset.quantidade),
+      cavalo: li.dataset.cavalo === "true"
     }));
 
     const payload = {
