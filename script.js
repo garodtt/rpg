@@ -706,10 +706,13 @@ async function salvarFicha(){
     }));
 
     const armas = [...document.querySelectorAll("#listaArmas li")].map(li => ({
-        nome: li.dataset.nome,
-        dano: Number(li.dataset.dano),
-        municao: Number(li.dataset.municao)
+      nome: li.dataset.nome,
+      dano: Number(li.dataset.dano),
+      tipoDano: li.dataset.tipoDano,
+      municaoAtual: Number(li.dataset.municaoAtual),
+      municaoMax: Number(li.dataset.municaoMax)
     }));
+
     
     const inventario = [
     ...document.querySelectorAll("#listaInventario li"),
@@ -984,8 +987,82 @@ function preencherFormularioComFicha(f){
       boxCavalo.style.display = "block";
       statusCavalo.style.display = "block";
     }
+    // ===============================
+    // RESTAURA TIPO DE CAVALO
+    // ===============================
+    if (pesoCavaloAtual > 0) {
+      cavaloAtivo = true;
+      boxCavalo.style.display = "block";
+      statusCavalo.style.display = "block";
+
+      // fallback automático
+      if (pesoCavaloMax === 0) {
+        pesoCavaloMax = 30;
+        document.getElementById("tipoCavalo").value = "30";
+      }
+    }
 
   }
+
+  // ===============================
+  // ARMAS
+  // ===============================
+  limparArmas();
+
+  if (Array.isArray(f.arma)) {
+    f.arma.forEach(a => {
+      const li = document.createElement("li");
+
+      li.dataset.nome = a.nome;
+      li.dataset.dano = a.dano;
+      li.dataset.tipoDano = a.tipoDano;
+      li.dataset.municaoAtual = a.municaoAtual;
+      li.dataset.municaoMax = a.municaoMax;
+
+      li.innerHTML = `
+        <strong>${a.nome}</strong>
+        — Dano: ${a.dano} (${a.tipoDano})
+        — Munição: <span class="municao">${a.municaoAtual}</span>
+
+        <button class="menosMunicao">-1</button>
+        <button class="maisMunicao">+1</button>
+        <button class="recarregar" style="display:${a.municaoAtual <= 0 ? "inline" : "none"}">Recarregar</button>
+        <button class="removerArma">🗑️</button>
+      `;
+
+      // reaplica lógica
+      addEventosArma(li);
+
+      document.getElementById("listaArmas").appendChild(li);
+    });
+
+    // ===============================
+    // HABILIDADES
+    // ===============================
+    limparHabilidades();
+
+    if (Array.isArray(f.habilidade)) {
+      f.habilidade.forEach(h => {
+        const li = document.createElement("li");
+
+        li.dataset.nome = h.nome;
+        li.dataset.desc = h.desc;
+
+        li.innerHTML = `
+          <strong>${h.nome}</strong> — ${h.desc}
+          <button class="removerHabilidade">🗑️</button>
+        `;
+
+        li.querySelector(".removerHabilidade").onclick = () => {
+          li.remove();
+        };
+
+        document.getElementById("listaHabilidades").appendChild(li);
+      });
+    }
+
+}
+
 /* ================================= */
 /*        GERENCIAMENTO              */
 /* ================================= */
