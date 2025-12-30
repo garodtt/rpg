@@ -94,6 +94,50 @@ function aplicarEventosArma(li){
     };
 }
 
+function renderItemInventario(item) {
+  const pesoTotal = item.peso * item.quantidade;
+  const li = document.createElement("li");
+
+  // DATASET
+  li.dataset.nome = item.nome;
+  li.dataset.descricao = item.descricao;
+  li.dataset.peso = item.peso;
+  li.dataset.quantidade = item.quantidade;
+  li.dataset.cavalo = item.cavalo ? "true" : "false";
+
+  li.innerHTML = `
+    <strong>${item.nome}</strong> (${item.quantidade}x)
+    — Peso: ${pesoTotal}
+    <br><em>${item.descricao}</em>
+    <button>🗑️</button>
+  `;
+
+  li.querySelector("button").onclick = () => {
+    if (item.cavalo) {
+      pesoCavaloAtual -= pesoTotal;
+      atualizarPesoCavalo();
+    } else {
+      pesoAtual -= pesoTotal;
+      atualizarPesoAtual();
+    }
+    li.remove();
+  };
+
+  // PLAYER
+  if (!item.cavalo) {
+    pesoAtual += pesoTotal;
+    atualizarPesoAtual();
+    document.getElementById("listaInventario").appendChild(li);
+  }
+
+  // CAVALO
+  else {
+    pesoCavaloAtual += pesoTotal;
+    atualizarPesoCavalo();
+    document.getElementById("listaInventarioCavalo").appendChild(li);
+  }
+}
+
 // ===============================
 // FUNÇÕES DE ARMAS
 // ===============================
@@ -778,10 +822,10 @@ async function salvarFicha(){
         municaoMax: Number(li.dataset.municaoMax)
     }));
 
-    const inventario = [
-        ...document.querySelectorAll("#listaInventario li"),
-        ...document.querySelectorAll("#listaInventarioCavalo li")
-            ].map(li => ({
+   const inventario = [
+            ...document.querySelectorAll("#listaInventario li"),
+            ...document.querySelectorAll("#listaInventarioCavalo li")
+        ].map(li => ({
             nome: li.dataset.nome,
             descricao: li.dataset.descricao,
             peso: Number(li.dataset.peso),
@@ -953,52 +997,17 @@ function preencherFormularioComFicha(f){
     montarStatus();
     aplicarDano();
 
-    // ===============================
     // INVENTÁRIO
-    // ===============================
-    limparInventario();
-    document.getElementById("pesoMax").value = f.peso_max ?? 10;
+    document.getElementById("listaInventario").innerHTML = "";
+    document.getElementById("listaInventarioCavalo").innerHTML = "";
 
-    if(Array.isArray(f.inventario)){
-        f.inventario.forEach(item => {
-            const pesoTotal = item.peso * item.quantidade;
+    pesoAtual = 0;
+    pesoCavaloAtual = 0;
 
-            const li = document.createElement("li");
-            li.dataset.nome = item.nome;
-            li.dataset.descricao = item.descricao;
-            li.dataset.peso = item.peso;
-            li.dataset.quantidade = item.quantidade;
-            li.dataset.cavalo = item.cavalo ? "true" : "false";
-
-            li.innerHTML = `
-            <strong>${item.nome}</strong> (${item.quantidade}x)
-            — Peso: ${pesoTotal}
-            <br><em>${item.descricao}</em>
-            <button>🗑️</button>
-            `;
-
-            if(item.cavalo){
-                pesoCavaloAtual += pesoTotal;
-                li.querySelector("button").onclick = () => {
-                    pesoCavaloAtual -= pesoTotal;
-                    atualizarPesoCavalo();
-                    li.remove();
-                };
-                document.getElementById("listaInventarioCavalo").appendChild(li);
-            } else {
-                pesoAtual += pesoTotal;
-                li.querySelector("button").onclick = () => {
-                    pesoAtual -= pesoTotal;
-                    atualizarPesoAtual();
-                    li.remove();
-                };
-                document.getElementById("listaInventario").appendChild(li);
-            }
-        });
+    if (ficha.inventario && Array.isArray(ficha.inventario)) {
+    ficha.inventario.forEach(item => renderItemInventario(item));
     }
 
-    atualizarPesoAtual();
-    atualizarPesoCavalo();
 
 
     // ===============================
