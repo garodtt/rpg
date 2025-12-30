@@ -923,45 +923,69 @@ function preencherFormularioComFicha(f){
     montarStatusMontaria();
 
     // ===============================
-    // INVENTÁRIO
+    // INVENTÁRIO (PLAYER + CAVALO)
     // ===============================
     limparInventario();
 
     document.getElementById("pesoMax").value = f.peso_max ?? 10;
 
     if (Array.isArray(f.inventario)) {
-        f.inventario.forEach(item => {
-            const pesoTotal = item.peso * item.quantidade;
-            pesoAtual += pesoTotal;
+      f.inventario.forEach(item => {
+        const pesoTotal = item.peso * item.quantidade;
 
-            const li = document.createElement("li");
-            li.dataset.nome = item.nome;
-            li.dataset.descricao = item.descricao;
-            li.dataset.peso = item.peso;
-            li.dataset.quantidade = item.quantidade;
+        const li = document.createElement("li");
 
-            li.innerHTML = `
-                <strong>${item.nome}</strong> (${item.quantidade}x)
-                — Peso: ${pesoTotal}
-                <br><em>${item.descricao}</em>
-                <button class="removerItem">🗑️</button>
-            `;
+        // 🔐 dataset (ESSENCIAL)
+        li.dataset.nome = item.nome;
+        li.dataset.descricao = item.descricao;
+        li.dataset.peso = item.peso;
+        li.dataset.quantidade = item.quantidade;
+        li.dataset.cavalo = item.cavalo ? "true" : "false";
 
-            li.querySelector(".removerItem").onclick = () => {
-                pesoAtual -= item.peso * item.quantidade;
-                atualizarPesoAtual();
-                li.remove();
-            };
+        li.innerHTML = `
+          <strong>${item.nome}</strong> (${item.quantidade}x)
+          — Peso: ${pesoTotal}
+          <br><em>${item.descricao}</em>
+          <button class="removerItem">🗑️</button>
+        `;
 
-            document.getElementById("listaInventario").appendChild(li);
-        });
+        li.querySelector(".removerItem").onclick = () => {
+          if (item.cavalo) {
+            pesoCavaloAtual -= pesoTotal;
+            atualizarPesoCavalo();
+          } else {
+            pesoAtual -= pesoTotal;
+            atualizarPesoAtual();
+          }
+          li.remove();
+        };
+
+        // 🐎 ITEM DO CAVALO
+        if (item.cavalo) {
+          cavaloAtivo = true;
+          pesoCavaloAtual += pesoTotal;
+
+          document.getElementById("listaInventarioCavalo").appendChild(li);
+        }
+        // 🧍 ITEM DO PLAYER
+        else {
+          pesoAtual += pesoTotal;
+          document.getElementById("listaInventario").appendChild(li);
+        }
+      });
     }
 
+    // 🔄 Atualiza pesos
     atualizarPesoAtual();
+    atualizarPesoCavalo();
 
-}
+    // 🐎 Exibe UI do cavalo se necessário
+    if (pesoCavaloAtual > 0) {
+      boxCavalo.style.display = "block";
+      statusCavalo.style.display = "block";
+    }
 
-
+  }
 /* ================================= */
 /*        GERENCIAMENTO              */
 /* ================================= */
