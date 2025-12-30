@@ -40,6 +40,73 @@ window.abrir = function(nome){
     document.getElementById(nome).style.display = "block";
 };
 
+// ===============================
+// VARIÁVEIS GLOBAIS
+// ===============================
+const armas = [];
+let pesoAtual = 0;
+let pesoCavaloAtual = 0;
+
+// ===============================
+// FUNÇÕES AUXILIARES
+// ===============================
+
+function aplicarEventosArma(li){
+    const menos = li.querySelector(".menosMunicao");
+    const mais = li.querySelector(".maisMunicao");
+    const recarregar = li.querySelector(".recarregar");
+    const remover = li.querySelector(".removerArma");
+    const span = li.querySelector(".municao");
+
+    menos.onclick = () => {
+        let m = Number(li.dataset.municaoAtual);
+        if(m <= 0) return;
+        m--;
+        li.dataset.municaoAtual = m;
+        span.textContent = m;
+        if(m <= 0){
+            menos.style.display = "none";
+            recarregar.style.display = "inline";
+        }
+    };
+
+    mais.onclick = () => {
+        let m = Number(li.dataset.municaoAtual);
+        const max = Number(li.dataset.municaoMax);
+        if(m >= max) return;
+        m++;
+        li.dataset.municaoAtual = m;
+        span.textContent = m;
+        menos.style.display = "inline";
+        recarregar.style.display = "none";
+    };
+
+    recarregar.onclick = () => {
+        const max = Number(li.dataset.municaoMax);
+        li.dataset.municaoAtual = max;
+        span.textContent = max;
+        menos.style.display = "inline";
+        recarregar.style.display = "none";
+    };
+
+    remover.onclick = () => {
+        if(confirm(`Remover a arma "${li.dataset.nome}"?`)) li.remove();
+    };
+}
+
+// ===============================
+// FUNÇÕES DE ARMAS
+// ===============================
+
+function addArma(){
+   aplicarEventosArma(li);
+}
+
+function preencherFormularioComFicha(f){
+   aplicarEventosArma(li);
+}
+
+
 /* ================================= */
 /*        STATUS: VIDA / DOR         */
 /* ================================= */
@@ -510,12 +577,8 @@ montarStatusMontaria();
 // INVENTÁRIO
 // ===============================
 
-// ---- PLAYER ----
-let pesoAtual = 0;
-
 // ---- CAVALO ----
 let cavaloAtivo = false;
-let pesoCavaloAtual = 0;
 let pesoCavaloMax = 0;
 let tipoCavaloAnterior = "";
 let flagEnviarCavalo = false;
@@ -715,12 +778,17 @@ async function salvarFicha(){
         municaoMax: Number(li.dataset.municaoMax)
     }));
 
-    const inventario = [...document.querySelectorAll("#listaInventario li")].map(li => ({
-    nome: li.dataset.nome,
-    descricao: li.dataset.descricao,
-    peso: Number(li.dataset.peso),
-    quantidade: Number(li.dataset.quantidade)
+    const inventario = [
+        ...document.querySelectorAll("#listaInventario li"),
+        ...document.querySelectorAll("#listaInventarioCavalo li")
+            ].map(li => ({
+            nome: li.dataset.nome,
+            descricao: li.dataset.descricao,
+            peso: Number(li.dataset.peso),
+            quantidade: Number(li.dataset.quantidade),
+            cavalo: li.dataset.cavalo === "true"
     }));
+
 
     const payload = {
     nome,
@@ -742,7 +810,6 @@ async function salvarFicha(){
     dor_max: statusValores.dorMax,
 
     montaria_nome: document.getElementById("montariaNome").value || "",
-    montaria_nivel: montariaStatus.nivel,
     montaria_vida: montariaStatus.vidaAtual,
     montaria_vida_max: montariaStatus.vidaMax,
     montaria_dor: montariaStatus.dorAtual,
@@ -842,19 +909,6 @@ async function carregarFicha(id){
         alert("Erro ao carregar ficha: " + err.message);
         console.error(err);
     }
-    // ===============================
-    // MONTARIA
-    // ===============================
-    document.getElementById("montariaNome").value = f.montaria_nome ?? "";
-
-    montariaStatus.nivel     = f.montaria_nivel ?? 1;
-    montariaStatus.vidaAtual = f.montaria_vida ?? 10;
-    montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
-    montariaStatus.dorAtual  = f.montaria_dor ?? 0;
-    montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
-
-    montarStatusMontaria();
-
 }
 
 function preencherFormularioComFicha(f){
@@ -908,32 +962,44 @@ function preencherFormularioComFicha(f){
     if(Array.isArray(f.inventario)){
         f.inventario.forEach(item => {
             const pesoTotal = item.peso * item.quantidade;
-            pesoAtual += pesoTotal;
 
             const li = document.createElement("li");
             li.dataset.nome = item.nome;
             li.dataset.descricao = item.descricao;
             li.dataset.peso = item.peso;
             li.dataset.quantidade = item.quantidade;
+            li.dataset.cavalo = item.cavalo ? "true" : "false";
 
             li.innerHTML = `
-              <strong>${item.nome}</strong> (${item.quantidade}x)
-              — Peso: ${pesoTotal}
-              <br><em>${item.descricao}</em>
-              <button>🗑️</button>
+            <strong>${item.nome}</strong> (${item.quantidade}x)
+            — Peso: ${pesoTotal}
+            <br><em>${item.descricao}</em>
+            <button>🗑️</button>
             `;
 
-            li.querySelector("button").onclick = () => {
-                pesoAtual -= pesoTotal;
-                atualizarPesoAtual();
-                li.remove();
-            };
-
-            document.getElementById("listaInventario").appendChild(li);
+            if(item.cavalo){
+                pesoCavaloAtual += pesoTotal;
+                li.querySelector("button").onclick = () => {
+                    pesoCavaloAtual -= pesoTotal;
+                    atualizarPesoCavalo();
+                    li.remove();
+                };
+                document.getElementById("listaInventarioCavalo").appendChild(li);
+            } else {
+                pesoAtual += pesoTotal;
+                li.querySelector("button").onclick = () => {
+                    pesoAtual -= pesoTotal;
+                    atualizarPesoAtual();
+                    li.remove();
+                };
+                document.getElementById("listaInventario").appendChild(li);
+            }
         });
     }
 
     atualizarPesoAtual();
+    atualizarPesoCavalo();
+
 
     // ===============================
     // ARMAS
