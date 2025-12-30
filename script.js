@@ -385,7 +385,7 @@ function addArma(){
 /* ================================= */
 
 function atirar(liArma) {
-    let municao = Number(liArma.dataset.municao || 0);
+    let municao = Number(liArma.dataset.municaoAtual || 0);
     const dano = Number(liArma.dataset.dano || 0);
 
     if (municao <= 0) {
@@ -394,7 +394,7 @@ function atirar(liArma) {
     }
 
     municao--;
-    liArma.dataset.municao = municao;
+    liArma.dataset.municaoAtual = municao;
 
     liArma.innerHTML = `<strong>${liArma.dataset.nome}</strong> — Dano: ${dano}, Munição: ${municao}`;
 
@@ -845,18 +845,6 @@ async function carregarFicha(id){
         alert("Erro ao carregar ficha: " + err.message);
         console.error(err);
     }
-    // ===============================
-    // MONTARIA
-    // ===============================
-    document.getElementById("montariaNome").value = f.montaria_nome ?? "";
-
-    montariaStatus.nivel     = f.montaria_nivel ?? 1;
-    montariaStatus.vidaAtual = f.montaria_vida ?? 10;
-    montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
-    montariaStatus.dorAtual  = f.montaria_dor ?? 0;
-    montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
-
-    montarStatusMontaria();
 
 }
 
@@ -925,143 +913,139 @@ function preencherFormularioComFicha(f){
 
     montarStatusMontaria();
 
+      // ===============================
+      // INVENTÁRIO (PLAYER + CAVALO)
+      // ===============================
+      limparInventario();
+
+      document.getElementById("pesoMax").value = f.peso_max ?? 10;
+
+      if (Array.isArray(f.inventario)) {
+        f.inventario.forEach(item => {
+          const pesoTotal = item.peso * item.quantidade;
+
+          const li = document.createElement("li");
+
+          // 🔐 dataset (ESSENCIAL)
+          li.dataset.nome = item.nome;
+          li.dataset.descricao = item.descricao;
+          li.dataset.peso = item.peso;
+          li.dataset.quantidade = item.quantidade;
+          li.dataset.cavalo = item.cavalo ? "true" : "false";
+
+          li.innerHTML = `
+            <strong>${item.nome}</strong> (${item.quantidade}x)
+            — Peso: ${pesoTotal}
+            <br><em>${item.descricao}</em>
+            <button class="removerItem">🗑️</button>
+          `;
+
+          li.querySelector(".removerItem").onclick = () => {
+            if (item.cavalo) {
+              pesoCavaloAtual -= pesoTotal;
+              atualizarPesoCavalo();
+            } else {
+              pesoAtual -= pesoTotal;
+              atualizarPesoAtual();
+            }
+            li.remove();
+          };
+
+          // 🐎 ITEM DO CAVALO
+          if (item.cavalo) {
+            cavaloAtivo = true;
+            pesoCavaloAtual += pesoTotal;
+
+            document.getElementById("listaInventarioCavalo").appendChild(li);
+          }
+          // 🧍 ITEM DO PLAYER
+          else {
+            pesoAtual += pesoTotal;
+            document.getElementById("listaInventario").appendChild(li);
+          }
+        });
+      }
+
+      // 🔄 Atualiza pesos
+      atualizarPesoAtual();
+      atualizarPesoCavalo();
+
+      // 🐎 Exibe UI do cavalo se necessário
+      if (pesoCavaloAtual > 0) {
+        boxCavalo.style.display = "block";
+        statusCavalo.style.display = "block";
+      }
+      // ===============================
+      // RESTAURA TIPO DE CAVALO
+      // ===============================
+      if (pesoCavaloAtual > 0) {
+        cavaloAtivo = true;
+        boxCavalo.style.display = "block";
+        statusCavalo.style.display = "block";
+
+        // fallback automático
+        if (pesoCavaloMax === 0) {
+          pesoCavaloMax = 30;
+          document.getElementById("tipoCavalo").value = "30";
+        }
+      }
+      // ===============================
+    // ARMAS
     // ===============================
-    // INVENTÁRIO (PLAYER + CAVALO)
-    // ===============================
-    limparInventario();
+    limparArmas();
 
-    document.getElementById("pesoMax").value = f.peso_max ?? 10;
-
-    if (Array.isArray(f.inventario)) {
-      f.inventario.forEach(item => {
-        const pesoTotal = item.peso * item.quantidade;
-
+    if (Array.isArray(f.arma)) {
+      f.arma.forEach(a => {
         const li = document.createElement("li");
 
-        // 🔐 dataset (ESSENCIAL)
-        li.dataset.nome = item.nome;
-        li.dataset.descricao = item.descricao;
-        li.dataset.peso = item.peso;
-        li.dataset.quantidade = item.quantidade;
-        li.dataset.cavalo = item.cavalo ? "true" : "false";
+        li.dataset.nome = a.nome;
+        li.dataset.dano = a.dano;
+        li.dataset.tipoDano = a.tipoDano;
+        li.dataset.municaoAtual = a.municaoAtual;
+        li.dataset.municaoMax = a.municaoMax;
 
         li.innerHTML = `
-          <strong>${item.nome}</strong> (${item.quantidade}x)
-          — Peso: ${pesoTotal}
-          <br><em>${item.descricao}</em>
-          <button class="removerItem">🗑️</button>
+          <strong>${a.nome}</strong>
+          — Dano: ${a.dano} (${a.tipoDano})
+          — Munição: <span class="municao">${a.municaoAtual}</span>
+
+          <button class="menosMunicao">-1</button>
+          <button class="maisMunicao">+1</button>
+          <button class="recarregar" style="display:${a.municaoAtual <= 0 ? "inline" : "none"}">Recarregar</button>
+          <button class="removerArma">🗑️</button>
         `;
 
-        li.querySelector(".removerItem").onclick = () => {
-          if (item.cavalo) {
-            pesoCavaloAtual -= pesoTotal;
-            atualizarPesoCavalo();
-          } else {
-            pesoAtual -= pesoTotal;
-            atualizarPesoAtual();
-          }
-          li.remove();
-        };
-
-        // 🐎 ITEM DO CAVALO
-        if (item.cavalo) {
-          cavaloAtivo = true;
-          pesoCavaloAtual += pesoTotal;
-
-          document.getElementById("listaInventarioCavalo").appendChild(li);
-        }
-        // 🧍 ITEM DO PLAYER
-        else {
-          pesoAtual += pesoTotal;
-          document.getElementById("listaInventario").appendChild(li);
-        }
+        document.getElementById("listaArmas").appendChild(li);
       });
-    }
 
-    // 🔄 Atualiza pesos
-    atualizarPesoAtual();
-    atualizarPesoCavalo();
+      // ===============================
+      // HABILIDADES
+      // ===============================
+      limparHabilidades();
 
-    // 🐎 Exibe UI do cavalo se necessário
-    if (pesoCavaloAtual > 0) {
-      boxCavalo.style.display = "block";
-      statusCavalo.style.display = "block";
-    }
-    // ===============================
-    // RESTAURA TIPO DE CAVALO
-    // ===============================
-    if (pesoCavaloAtual > 0) {
-      cavaloAtivo = true;
-      boxCavalo.style.display = "block";
-      statusCavalo.style.display = "block";
+      if (Array.isArray(f.habilidade)) {
+        f.habilidade.forEach(h => {
+          const li = document.createElement("li");
 
-      // fallback automático
-      if (pesoCavaloMax === 0) {
-        pesoCavaloMax = 30;
-        document.getElementById("tipoCavalo").value = "30";
+          li.dataset.nome = h.nome;
+          li.dataset.desc = h.desc;
+
+          li.innerHTML = `
+            <strong>${h.nome}</strong> — ${h.desc}
+            <button class="removerHabilidade">🗑️</button>
+          `;
+
+          li.querySelector(".removerHabilidade").onclick = () => {
+            li.remove();
+          };
+
+          document.getElementById("listaHabilidades").appendChild(li);
+        });
       }
     }
-
   }
 
-  // ===============================
-  // ARMAS
-  // ===============================
-  limparArmas();
-
-  if (Array.isArray(f.arma)) {
-    f.arma.forEach(a => {
-      const li = document.createElement("li");
-
-      li.dataset.nome = a.nome;
-      li.dataset.dano = a.dano;
-      li.dataset.tipoDano = a.tipoDano;
-      li.dataset.municaoAtual = a.municaoAtual;
-      li.dataset.municaoMax = a.municaoMax;
-
-      li.innerHTML = `
-        <strong>${a.nome}</strong>
-        — Dano: ${a.dano} (${a.tipoDano})
-        — Munição: <span class="municao">${a.municaoAtual}</span>
-
-        <button class="menosMunicao">-1</button>
-        <button class="maisMunicao">+1</button>
-        <button class="recarregar" style="display:${a.municaoAtual <= 0 ? "inline" : "none"}">Recarregar</button>
-        <button class="removerArma">🗑️</button>
-      `;
-
-      // reaplica lógica
-      addEventosArma(li);
-
-      document.getElementById("listaArmas").appendChild(li);
-    });
-
-    // ===============================
-    // HABILIDADES
-    // ===============================
-    limparHabilidades();
-
-    if (Array.isArray(f.habilidade)) {
-      f.habilidade.forEach(h => {
-        const li = document.createElement("li");
-
-        li.dataset.nome = h.nome;
-        li.dataset.desc = h.desc;
-
-        li.innerHTML = `
-          <strong>${h.nome}</strong> — ${h.desc}
-          <button class="removerHabilidade">🗑️</button>
-        `;
-
-        li.querySelector(".removerHabilidade").onclick = () => {
-          li.remove();
-        };
-
-        document.getElementById("listaHabilidades").appendChild(li);
-      });
-    }
-
-}
+    
 
 /* ================================= */
 /*        GERENCIAMENTO              */
