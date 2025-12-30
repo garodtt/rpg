@@ -620,6 +620,14 @@ function addItem() {
     atualizarPesoCavalo();
 
     const li = document.createElement("li");
+
+    // ✅ DATASET (ESSENCIAL)
+    li.dataset.nome = nome;
+    li.dataset.descricao = descricao;
+    li.dataset.peso = peso;
+    li.dataset.quantidade = qtd;
+    li.dataset.cavalo = "true";
+
     li.innerHTML = `
       <strong>${nome}</strong> (${qtd}x)
       — Peso: ${pesoTotal}
@@ -647,6 +655,14 @@ function addItem() {
     atualizarPesoAtual();
 
     const li = document.createElement("li");
+
+    // ✅ DATASET (ESSENCIAL)
+    li.dataset.nome = nome;
+    li.dataset.descricao = descricao;
+    li.dataset.peso = peso;
+    li.dataset.quantidade = qtd;
+    li.dataset.cavalo = "false";
+
     li.innerHTML = `
       <strong>${nome}</strong> (${qtd}x)
       — Peso: ${pesoTotal}
@@ -669,6 +685,7 @@ function addItem() {
   itemPeso.value = "";
   itemQtd.value = 1;
 }
+
 
 
 /* ================================= */
