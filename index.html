@@ -82,116 +82,113 @@
     </div>
 
     <div class="box"> 
-  <h2>Armas</h2>
+    <h2>Armas</h2>
 
-  <input id="armaNome" placeholder="Nome da arma" />
-  <input id="armaDano" type="number" placeholder="Dano" />
-  <select id="armaTipoDano">
-    <option value="vida">Vida</option>
-    <option value="dor">Dor</option>
-  </select>
+    <input id="armaNome" placeholder="Nome da arma" />
+    <input id="armaDano" type="number" placeholder="Dano" />
+    <select id="armaTipoDano">
+      <option value="vida">Vida</option>
+      <option value="dor">Dor</option>
+    </select>
 
-  <input id="armaMunicao" type="number" placeholder="Munição" />
+    <input id="armaMunicao" type="number" placeholder="Munição" />
 
-  <div class="rowBtns">
-    <button onclick="addArma()">Adicionar</button>
-    <button onclick="limparArmas()">Limpar</button>
+    <div class="rowBtns">
+      <button onclick="addArma()">Adicionar</button>
+      <button onclick="limparArmas()">Limpar</button>
+    </div>
+
+    <ul id="listaArmas"></ul>
   </div>
 
-  <ul id="listaArmas"></ul>
-</div>
+    <div class="box">
+    <h2>Inventário</h2>
 
-   <div class="box">
-  <h2>Inventário</h2>
+    <!-- STATUS PESO -->
+    <div class="linha">
+      <label>
+        Peso Máximo
+        <input id="pesoMax" type="number" min="0" value="10">
+      </label>
 
-  <!-- STATUS PESO -->
-  <div class="linha">
-    <label>
-      Peso Máximo
-      <input id="pesoMax" type="number" min="0" value="10">
-    </label>
+      <label>
+        Peso Atual
+        <input id="pesoAtual" type="number" value="0" readonly>
+      </label>
 
-    <label>
-      Peso Atual
-      <input id="pesoAtual" type="number" value="0" readonly>
-    </label>
+      <!-- BOTÃO STATUS CAVALO -->
+      <button id="btnCavaloStatus" title="Montaria">🐎</button>
+    </div>
 
-    <!-- BOTÃO STATUS CAVALO -->
-    <button id="btnCavaloStatus" title="Montaria">🐎</button>
+    <!-- STATUS CAVALO -->
+    <div id="statusCavalo" style="display:none; margin-top:10px;">
+    <strong>Montaria</strong>
+
+    <div class="linha">
+      <label>
+        Tipo
+        <select id="tipoCavalo">
+          <option value="">Nenhum</option>
+          <option value="10">Bolsa de montaria (10)</option>
+          <option value="20">Carro (20)</option>
+          <option value="30">Carroça (30)</option>
+        </select>
+      </label>
+    </div>
+
+    <div>
+      Peso Cavalo:
+      <span id="pesoCavaloAtual">0</span> /
+      <span id="pesoCavaloMax">0</span>
+    </div>
+  </div>
+    <hr>
+
+    <!-- ADD ITEM -->
+    <input id="itemNome" placeholder="Nome do item">
+    <input id="itemDesc" placeholder="Descrição">
+    <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
+    <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
+
+    <div class="rowBtns">
+      <!-- FLAG CAVALO -->
+      <button id="flagCavalo" title="Enviar para o cavalo" style="opacity:.4">🐎</button>
+      <button onclick="addItem()">Adicionar Item</button>
+      <button onclick="limparInventario()">Limpar</button>
+    </div>
+
+    <h3>🎒 Personagem</h3>
+    <ul id="listaInventario"></ul>
+
+    <!-- INVENTÁRIO DO CAVALO -->
+    <div id="boxCavalo" style="display:none;">
+      <h3>🐎 Cavalo</h3>
+      <ul id="listaInventarioCavalo"></ul>
+    </div>
   </div>
 
-  <!-- STATUS CAVALO -->
-  <div id="statusCavalo" style="display:none; margin-top:10px;">
-  <strong>Montaria</strong>
+    <div class="box">
+      <h2>🐎 Montaria</h2>
 
-  <div class="linha">
-    <label>
-      Tipo
-      <select id="tipoCavalo">
-        <option value="">Nenhum</option>
-        <option value="10">Bolsa de montaria (10)</option>
-        <option value="20">Carro (20)</option>
-        <option value="30">Carroça (30)</option>
-      </select>
-    </label>
-  </div>
+      <label>
+        Nome
+        <input id="montariaNome" type="text" placeholder="Nome da montaria">
+      </label>
 
-  <div>
-    Peso Cavalo:
-    <span id="pesoCavaloAtual">0</span> /
-    <span id="pesoCavaloMax">0</span>
-  </div>
-</div>
-  <hr>
+      <div class="linha topo-status">
+        <label>
+          vida_max
+          <input id="montariaVidaMaxInput" type="number" min="1" value="10">
+        </label>
 
-  <!-- ADD ITEM -->
-  <input id="itemNome" placeholder="Nome do item">
-  <input id="itemDesc" placeholder="Descrição">
-  <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
-  <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
+        <label>
+          dor_max
+          <input id="montariaDorMaxInput" type="number" min="1" value="10">
+        </label>
+      </div>
 
-  <div class="rowBtns">
-    <!-- FLAG CAVALO -->
-    <button id="flagCavalo" title="Enviar para o cavalo" style="opacity:.4">🐎</button>
-    <button onclick="addItem()">Adicionar Item</button>
-    <button onclick="limparInventario()">Limpar</button>
-  </div>
-
-  <h3>🎒 Personagem</h3>
-  <ul id="listaInventario"></ul>
-
-  <!-- INVENTÁRIO DO CAVALO -->
-  <div id="boxCavalo" style="display:none;">
-    <h3>🐎 Cavalo</h3>
-    <ul id="listaInventarioCavalo"></ul>
-  </div>
-</div>
-
-<div class="box">
-  <h2>🐎 Montaria</h2>
-
-  <label>
-    Nome
-    <input id="montariaNome" type="text" placeholder="Nome da montaria">
-  </label>
-
-  <div class="linha topo-status">
-    <label>
-      vida_max
-      <input id="montariaVidaMaxInput" type="number" min="1" value="10">
-    </label>
-
-    <label>
-      dor_max
-      <input id="montariaDorMaxInput" type="number" min="1" value="10">
-    </label>
-  </div>
-
-  <div id="areaStatusMontaria"></div>
-</div>
-
-
-
+      <div id="areaStatusMontaria"></div>
+    </div>
 
     <div class="box">
       <h2>XP</h2>
