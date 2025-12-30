@@ -405,42 +405,62 @@ function limparArmas() {
     document.getElementById("listaArmas").innerHTML = "";
 }
 
-// ===============================
-// MONTARIA
-// ===============================
+/* ================================= */
+/*            MONTARIA               */
+/* ================================= */
 
-let montariaNivel = 1;
+const montariaStatus = {
+  nivel: 1,
+  vidaAtual: 10,
+  vidaMax: 10,
+  dorAtual: 0,
+  dorMax: 10
+};
 
-// NÍVEL (igual atributo)
-function alterarNivelMontaria(valor) {
-  montariaNivel += valor;
-  if (montariaNivel < 1) montariaNivel = 1;
-  document.getElementById("montariaNivel").textContent = montariaNivel;
+function montarStatusMontaria() {
+  document.getElementById("montariaNivel").textContent = montariaStatus.nivel;
+  document.getElementById("montariaVidaAtual").value = montariaStatus.vidaAtual;
+  document.getElementById("montariaVidaMax").value   = montariaStatus.vidaMax;
+  document.getElementById("montariaDorAtual").value  = montariaStatus.dorAtual;
+  document.getElementById("montariaDorMax").value    = montariaStatus.dorMax;
 }
 
-// VIDA
+// NÍVEL (igual atributo)
+function alterarNivelMontaria(delta) {
+  montariaStatus.nivel = Math.max(1, montariaStatus.nivel + delta);
+  montarStatusMontaria();
+}
+
+// VIDA MAX → reseta vida atual
 document.getElementById("montariaVidaMax").onchange = () => {
-  const vidaMax = Number(montariaVidaMax.value);
-  montariaVidaAtual.value = vidaMax;
+  montariaStatus.vidaMax   = Number(montariaVidaMax.value);
+  montariaStatus.vidaAtual = montariaStatus.vidaMax;
+  montarStatusMontaria();
 };
 
-// DOR
+// DOR MAX → reseta dor atual
 document.getElementById("montariaDorMax").onchange = () => {
-  montariaDorAtual.value = 0;
+  montariaStatus.dorMax   = Number(montariaDorMax.value);
+  montariaStatus.dorAtual = montariaStatus.dorMax;
+  montarStatusMontaria();
 };
 
-// SEGURANÇA (nunca passa do máximo)
+// NORMALIZAÇÃO (igual personagem)
 document.getElementById("montariaVidaAtual").onchange = () => {
-  if (Number(montariaVidaAtual.value) > Number(montariaVidaMax.value)) {
-    montariaVidaAtual.value = montariaVidaMax.value;
+  if (montariaStatus.vidaAtual > montariaStatus.vidaMax) {
+    montariaStatus.vidaAtual = montariaStatus.vidaMax;
   }
 };
 
 document.getElementById("montariaDorAtual").onchange = () => {
-  if (Number(montariaDorAtual.value) > Number(montariaDorMax.value)) {
-    montariaDorAtual.value = montariaDorMax.value;
+  if (montariaStatus.dorAtual > montariaStatus.dorMax) {
+    montariaStatus.dorAtual = montariaStatus.dorMax;
   }
 };
+
+// Inicialização
+montarStatusMontaria();
+
 
 
 // ===============================
@@ -479,18 +499,27 @@ document.getElementById("flagCavalo").onclick = () => {
 selectTipoCavalo.onchange = () => {
   const novoMax = Number(selectTipoCavalo.value);
 
+  // soma real dos itens já existentes
+  let pesoItens = pesoCavaloAtual;
+
   if (!novoMax) {
+    if (pesoItens > 0) {
+      alert("🐎 Remova os itens do cavalo antes de remover a montaria!");
+      selectTipoCavalo.value = tipoCavaloAnterior;
+      return;
+    }
+
     cavaloAtivo = false;
     pesoCavaloMax = 0;
-    atualizarPesoCavalo();
     boxCavalo.style.display = "none";
     tipoCavaloAnterior = "";
+    atualizarPesoCavalo();
     return;
   }
 
   // valida peso atual
-  if (pesoCavaloAtual > novoMax) {
-    alert("🐎 O peso atual do cavalo excede este tipo de montaria!");
+  if (pesoItens > novoMax) {
+    alert("🐎 O peso atual dos itens excede este tipo de montaria!");
     selectTipoCavalo.value = tipoCavaloAnterior;
     return;
   }
@@ -499,9 +528,10 @@ selectTipoCavalo.onchange = () => {
   pesoCavaloMax = novoMax;
   tipoCavaloAnterior = selectTipoCavalo.value;
 
-  atualizarPesoCavalo();
   boxCavalo.style.display = "block";
+  atualizarPesoCavalo();
 };
+
 
 function atualizarPesoAtual() {
   document.getElementById("pesoAtual").value = pesoAtual;
@@ -647,7 +677,14 @@ async function salvarFicha(){
     vida: statusValores.vidaAtual,
     vida_max: statusValores.vidaMax,
     dor: statusValores.dorAtual,
-    dor_max: statusValores.dorMax
+    dor_max: statusValores.dorMax,
+
+    montaria_nome: document.getElementById("montariaNome").value || "",
+    montaria_nivel: montariaStatus.nivel,
+    montaria_vida: montariaStatus.vidaAtual,
+    montaria_vida_max: montariaStatus.vidaMax,
+    montaria_dor: montariaStatus.dorAtual,
+    montaria_dor_max: montariaStatus.dorMax,
 };
 
 
@@ -743,6 +780,18 @@ async function carregarFicha(id){
         alert("Erro ao carregar ficha: " + err.message);
         console.error(err);
     }
+    // ===============================
+    // MONTARIA
+    // ===============================
+    document.getElementById("montariaNome").value = f.montaria_nome ?? "";
+
+    montariaStatus.nivel     = f.montaria_nivel ?? 1;
+    montariaStatus.vidaAtual = f.montaria_vida ?? 10;
+    montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
+    montariaStatus.dorAtual  = f.montaria_dor ?? 0;
+    montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
+
+    montarStatusMontaria();
 
 }
 
