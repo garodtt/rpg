@@ -175,32 +175,21 @@
     <input id="montariaNome" type="text" placeholder="Nome da montaria">
   </label>
 
-  <!-- NÍVEL -->
-  <div class="linha">
-    <strong>Nível</strong>
-    <button onclick="alterarNivelMontaria(-1)">➖</button>
-    <span id="montariaNivel">1</span>
-    <button onclick="alterarNivelMontaria(1)">➕</button>
+  <div class="linha topo-status">
+    <label>
+      vida_max
+      <input id="montariaVidaMaxInput" type="number" min="1" value="10">
+    </label>
+
+    <label>
+      dor_max
+      <input id="montariaDorMaxInput" type="number" min="1" value="10">
+    </label>
   </div>
 
-  <hr>
-
-  <!-- VIDA -->
-  <div class="linha">
-    <strong>Vida</strong>
-    <input id="montariaVidaAtual" type="number" min="0" value="10">
-    /
-    <input id="montariaVidaMax" type="number" min="0" value="10">
-  </div>
-
-  <!-- DOR -->
-  <div class="linha">
-    <strong>Dor</strong>
-    <input id="montariaDorAtual" type="number" min="0" value="0">
-    /
-    <input id="montariaDorMax" type="number" min="0" value="10">
-  </div>
+  <div id="areaStatusMontaria"></div>
 </div>
+
 
 
 
