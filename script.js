@@ -887,6 +887,22 @@ function preencherFormularioComFicha(f){
     montarCampos();
     montarStatus();
     aplicarDano();
+
+    // ===============================
+    // MONTARIA
+    // ===============================
+    document.getElementById("montariaNome").value = f.montaria_nome ?? "";
+
+    montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
+    montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
+    montariaStatus.vidaAtual = f.montaria_vida ?? montariaStatus.vidaMax;
+    montariaStatus.dorAtual  = f.montaria_dor ?? montariaStatus.dorMax;
+
+    document.getElementById("montariaVidaMaxInput").value = montariaStatus.vidaMax;
+    document.getElementById("montariaDorMaxInput").value  = montariaStatus.dorMax;
+
+    montarStatusMontaria();
+
     // ===============================
     // INVENTÁRIO
     // ===============================
@@ -925,22 +941,6 @@ function preencherFormularioComFicha(f){
     atualizarPesoAtual();
 
 }
-
-// ===============================
-// MONTARIA
-// ===============================
-document.getElementById("montariaNome").value = f.montaria_nome ?? "";
-
-montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
-montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
-montariaStatus.vidaAtual = f.montaria_vida ?? montariaStatus.vidaMax;
-montariaStatus.dorAtual  = f.montaria_dor ?? montariaStatus.dorMax;
-
-document.getElementById("montariaVidaMaxInput").value = montariaStatus.vidaMax;
-document.getElementById("montariaDorMaxInput").value  = montariaStatus.dorMax;
-
-montarStatusMontaria();
-
 
 
 /* ================================= */
