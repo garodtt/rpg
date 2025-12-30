@@ -853,6 +853,7 @@ async function salvarFicha(){
     dor: statusValores.dorAtual,
     dor_max: statusValores.dorMax,
 
+    tipo_cavalo: selectTipoCavalo.value || "",
     montaria_nome: document.getElementById("montariaNome").value || "",
     montaria_vida: montariaStatus.vidaAtual,
     montaria_vida_max: montariaStatus.vidaMax,
@@ -997,17 +998,25 @@ function preencherFormularioComFicha(f){
     montarStatus();
     aplicarDano();
 
+    // ===============================
     // INVENTÁRIO
+    // ===============================
     document.getElementById("listaInventario").innerHTML = "";
     document.getElementById("listaInventarioCavalo").innerHTML = "";
 
     pesoAtual = 0;
     pesoCavaloAtual = 0;
 
-    if (ficha.inventario && Array.isArray(ficha.inventario)) {
-    ficha.inventario.forEach(item => renderItemInventario(item));
+    // ⚠️ PRIMEIRO restaura tipo de cavalo
+    if (f.tipo_cavalo) {
+    selectTipoCavalo.value = f.tipo_cavalo;
+    selectTipoCavalo.dispatchEvent(new Event("change"));
     }
 
+    // ⚠️ DEPOIS renderiza itens
+    if (f.inventario && Array.isArray(f.inventario)) {
+    f.inventario.forEach(item => renderItemInventario(item));
+    }
 
 
     // ===============================
@@ -1072,7 +1081,17 @@ function preencherFormularioComFicha(f){
     document.getElementById("montariaDorMaxInput").value  = montariaStatus.dorMax;
 
     montarStatusMontaria();
-}
+    // Tipo de montaria
+        if (f.tipo_cavalo) {
+        selectTipoCavalo.value = f.tipo_cavalo;
+        selectTipoCavalo.dispatchEvent(new Event("change"));
+        } else {
+        selectTipoCavalo.value = "";
+        cavaloAtivo = false;
+        pesoCavaloMax = 0;
+        atualizarPesoCavalo();
+        }
+ }
 
 
 
