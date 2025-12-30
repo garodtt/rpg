@@ -1007,16 +1007,28 @@ function preencherFormularioComFicha(f){
     pesoAtual = 0;
     pesoCavaloAtual = 0;
 
-    // ⚠️ PRIMEIRO restaura tipo de cavalo
+    // NORMALIZA INVENTÁRIO
+    let inventarioNormalizado = f.inventario;
+    if (typeof inventarioNormalizado === "string") {
+    inventarioNormalizado = JSON.parse(inventarioNormalizado);
+    }
+
+    if (Array.isArray(inventarioNormalizado)) {
+    inventarioNormalizado.forEach(item => renderItemInventario(item));
+    }
+
+    // 👉 AGORA SIM restaura o cavalo
     if (f.tipo_cavalo) {
     selectTipoCavalo.value = f.tipo_cavalo;
     selectTipoCavalo.dispatchEvent(new Event("change"));
+    } else {
+    selectTipoCavalo.value = "";
+    cavaloAtivo = false;
+    pesoCavaloMax = 0;
+    atualizarPesoCavalo();
     }
 
-    // ⚠️ DEPOIS renderiza itens
-    if (f.inventario && Array.isArray(f.inventario)) {
-    f.inventario.forEach(item => renderItemInventario(item));
-    }
+
 
 
     // ===============================
