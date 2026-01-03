@@ -1,0 +1,20 @@
+export const acoes = [
+  { nome: "Montar acampamento corretamente", xp: 2 },
+  { nome: "Melhorar o nível da base", xp: 5 },
+  { nome: "Administrar recursos", xp: 4 },
+  { nome: "Superar evento noturno no acampamento", xp: 6 },
+  { nome: "Mapear uma área nova", xp: 6 },
+  { nome: "Descobrir algo oculto", xp: 10 },
+  { nome: "Decifrar documentos, bilhetes, mapas ou registros", xp: 8 },
+  { nome: "Sobreviver a um combate significativo", xp: 15 },
+  { nome: "Confrontar inimigo mais forte", xp: 20 },
+  { nome: "Evitar combate com boa estratégia", xp: 12 },
+  { nome: "Desenvolver o próprio antecedente na história", xp: 15 },
+  { nome: "Fazer uma conexão forte com um NPC", xp: 10 },
+  { nome: "Usar habilidades de forma criativa", xp: 8 },
+  { nome: "Resolver um grande problema da sessão", xp: 30 },
+  { nome: "Completar um arco curto de missão", xp: 40 },
+  { nome: "Desvendar um puzzle importante", xp: 15 },
+  { nome: "Descobrir pista relevante da história", xp: 12 },
+  { nome: "Tomar decisões difíceis que afetam a trama", xp: 20 }
+];

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema Oeste Selvagem</title>
+<link rel="stylesheet" href="./css/style.css">
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<header>🏜️ Oeste Selvagem</header>
+
+<!-- ================== HOME ================== -->
+<div id="home" class="tela" style="display:block;">
+  <a class="btn" onclick="novaFicha()">📘 Criar Ficha</a>
+  <a class="btn" onclick="abrir('gerenciamento')">⚙️ Gerenciamento de Personagens</a>
+  <a class="btn" onclick="abrir('telaFichas'); listarFichas()">📂 Fichas Salvas</a>
+</div>
+
+<!-- ================== FICHA ================== -->
+<div id="ficha" class="tela" style="display:none;">
+  <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+  
+  <!-- ⏱️ BOTÃO HISTÓRICO FIXO -->
+  <button id="btnHistorico" title="Histórico" onclick="abrirHistorico()">🕒</button>
+  
+  <h1>Ficha de Personagem</h1>
+
+  <div class="box">
+    <h2>Nome do Personagem</h2>
+    <div id="nomeWrapper">
+      <input id="nomePersonagem" placeholder="Digite o nome do personagem" />
+      <span id="iconeMorte" style="display:none;">☠️</span>
+    </div>
+
+    <div class="linha topo-status">
+      <label>
+        vida_max
+        <input id="vidaMaxInput" type="number" min="1" value="6" onchange="reiniciarStatus()">
+      </label>
+
+      <label>
+        dor_max
+        <input id="dorMaxInput" type="number" min="1" value="6" onchange="reiniciarStatus()">
+      </label>
+    </div>
+
+    <h3>Antecedentes</h3>
+    <div id="areaAntecedentes"></div>
+
+    <h3>Atributos</h3>
+    <div id="areaAtributos"></div>
+  </div>
+
+  <div class="box">
+    <h2>Status</h2>
+    <div id="areaStatus"></div>
+  </div>
+
+  <div class="box">
+    <h2>Habilidades</h2>
+    <input id="habilidadeNome" placeholder="Nome da habilidade" />
+    <input id="habilidadeDesc" placeholder="Descrição da habilidade" />
+    <div class="rowBtns">
+      <button onclick="addHabilidade()">Adicionar</button>
+      <button onclick="limparHabilidades()">Limpar</button>
+    </div>
+    <ul id="listaHabilidades"></ul>
+  </div>
+
+  <div class="box">
+    <h2>Dinheiro</h2>
+    <input id="dinheiro" type="number" min="0" step="1" placeholder="0" />
+  </div>
+
+  <div class="box">
+    <h2>Armas</h2>
+
+    <input id="armaNome" placeholder="Nome da arma" />
+    <input id="armaDano" type="number" placeholder="Dano" />
+    <select id="armaTipoDano">
+      <option value="vida">Vida</option>
+      <option value="dor">Dor</option>
+    </select>
+
+    <input id="armaMunicao" type="number" placeholder="Munição" />
+
+    <div class="rowBtns">
+      <button onclick="addArma()">Adicionar</button>
+      <button onclick="limparArmas()">Limpar</button>
+    </div>
+
+    <ul id="listaArmas"></ul>
+  </div>
+
+  <div class="box">
+    <h2>Inventário</h2>
+
+    <div class="linha">
+      <label>
+        Peso Máximo
+        <input id="pesoMax" type="number" min="0" value="10">
+      </label>
+
+      <label>
+        Peso Atual
+        <input id="pesoAtual" type="number" value="0" readonly>
+      </label>
+
+      <button id="btnCavaloStatus" title="Montaria">🐎</button>
+    </div>
+
+    <div id="statusCavalo" style="display:none; margin-top:10px;">
+      <strong>Montaria</strong>
+
+      <div class="linha">
+        <label>
+          Tipo
+          <select id="tipoCavalo">
+            <option value="">Nenhum</option>
+            <option value="10">Bolsa de montaria (10)</option>
+            <option value="20">Carro (20)</option>
+            <option value="30">Carroça (30)</option>
+          </select>
+        </label>
+      </div>
+
+      <div>
+        Peso Cavalo:
+        <span id="pesoCavaloAtual">0</span> /
+        <span id="pesoCavaloMax">0</span>
+      </div>
+    </div>
+
+    <hr>
+
+    <input id="itemNome" placeholder="Nome do item">
+    <input id="itemDesc" placeholder="Descrição">
+    <input id="itemPeso" type="number" min="0" step="0.1" placeholder="Peso">
+    <input id="itemQtd" type="number" min="1" value="1" placeholder="Qtd">
+
+    <div class="rowBtns">
+      <button id="flagCavalo" title="Enviar para o cavalo" style="opacity:.4">🐎</button>
+      <button onclick="addItem()">Adicionar Item</button>
+      <button onclick="limparInventario()">Limpar</button>
+    </div>
+
+    <h3>🎒 Personagem</h3>
+    <ul id="listaInventario"></ul>
+
+    <div id="boxCavalo" style="display:none;">
+      <h3>🐎 Cavalo</h3>
+      <ul id="listaInventarioCavalo"></ul>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>🐎 Montaria</h2>
+
+    <label>
+      Nome
+      <input id="montariaNome" type="text" placeholder="Nome da montaria">
+    </label>
+
+    <div class="linha">
+      Nível da Montaria:
+      <input type="number" id="montariaNivel" min="0" value="0">
+    </div>
+
+    <div class="linha topo-status">
+      <label>
+        vida_max
+        <input id="montariaVidaMaxInput" type="number" min="1" value="10">
+      </label>
+
+      <label>
+        dor_max
+        <input id="montariaDorMaxInput" type="number" min="1" value="10">
+      </label>
+    </div>
+
+    <div id="areaStatusMontaria"></div>
+  </div>
+
+  <div class="box">
+    <h2>XP</h2>
+    <input id="xp" type="number" value="0" readonly />
+    <div id="listaAcoes"></div>
+  </div>
+
+  <button class="btn" onclick="salvarFicha()">💾 Salvar Ficha</button>
+</div>
+
+<!-- ================== GERENCIAMENTO ================== -->
+<div id="gerenciamento" class="tela" style="display:none;">
+  <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+  <h1>Gerenciador de Personagens</h1>
+
+  <div>
+    <input id="nomeInput" placeholder="Nome do personagem" />
+    <input id="vidaInput" type="number" placeholder="Vida" />
+    <input id="dorInput" type="number" placeholder="Dor Máxima" />
+    <input id="balasInput" type="number" placeholder="Qtd Máxima de Balas" />
+    <input id="iniInput" type="number" placeholder="Iniciativa" />
+    <button onclick="adicionarPersonagem()">Adicionar</button>
+  </div>
+
+  <div class="painel">
+    <div id="lista" class="listCol"></div>
+    <div id="painelIniciativas" class="iniCol"></div>
+  </div>
+</div>
+
+<!-- ================== FICHAS SALVAS ================== -->
+<div id="telaFichas" class="tela" style="display:none;">
+  <button class="btn" onclick="abrir('home')">⬅️ Voltar</button>
+  <h1>Fichas Salvas</h1>
+  <div id="listaFichas" class="box"></div>
+</div>
+
+<!-- ================== MODAL HISTÓRICO ================== -->
+<div id="modalHistorico" class="modal">
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h3>📜 Histórico</h3>
+      <button onclick="fecharHistorico()">✖</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button onclick="filtrarHistorico('status')">Status</button>
+      <button onclick="filtrarHistorico('cavalo')">Cavalo</button>
+      <button onclick="filtrarHistorico('xp')">XP</button>
+      <button onclick="filtrarHistorico('dinheiro')">Dinheiro</button>
+      <button onclick="filtrarHistorico('inventario')">Inventário</button>
+    </div>
+
+    <div id="historicoLista"></div>
+
+  </div>
+</div>
+
+<!-- ✅ SCRIPT PRINCIPAL -->
+<script type="module" src="./js/main.js"></script>
+
+</body>
+</html>
