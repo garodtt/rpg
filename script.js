@@ -854,6 +854,7 @@ async function salvarFicha(){
     dor_max: statusValores.dorMax,
 
     tipo_cavalo: cavaloAtivo ? selectTipoCavalo.value : "",
+    montaria_nivel: Number(document.getElementById("montariaNivel").value) || 0,
     montaria_nome: document.getElementById("montariaNome").value || "",
     montaria_vida: montariaStatus.vidaAtual,
     montaria_vida_max: montariaStatus.vidaMax,
@@ -1083,7 +1084,8 @@ function preencherFormularioComFicha(f){
     // MONTARIA
     // ===============================
     document.getElementById("montariaNome").value = f.montaria_nome ?? "";
-
+    document.getElementById("montariaNivel").value = f.montaria_nivel || 0;
+    
     montariaStatus.vidaMax   = f.montaria_vida_max ?? 10;
     montariaStatus.dorMax    = f.montaria_dor_max ?? 10;
     montariaStatus.vidaAtual = f.montaria_vida ?? montariaStatus.vidaMax;
@@ -1320,5 +1322,4 @@ window.excluirFicha  = excluirFicha;
 window.novaFicha     = novaFicha;
 window.abrirFichas   = abrirFichas;
 window.abrir         = abrir;
-
 
